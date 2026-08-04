@@ -1,59 +1,1378 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-  <title>Sidhant Maloo</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Event Horizon Lab — Multi Black Hole Merger Simulator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --void: #050409;
+            --panel: #0d0c17;
+            --line: rgba(207, 232, 255, 0.08);
+            --text: #cfe8ff;
+            --dim: #7d8aa3;
+            --gold: #ff8a3d;
+            --gold-dim: rgba(255, 138, 61, 0.35);
+            --violet: #8b6bff;
+            --violet-dim: rgba(139, 107, 255, 0.35);
+            --danger: #ff5470;
+            --ok: #4be3a5;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--void);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+
+        .mono {
+            font-family: 'Space Mono', monospace;
+        }
+
+        #app {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #sidebar {
+            width: 352px;
+            min-width: 352px;
+            height: 100%;
+            background: linear-gradient(180deg, #0b0a14, #08070f);
+            border-right: 1px solid var(--line);
+            overflow-y: auto;
+            padding: 16px 16px 60px 16px;
+            z-index: 6;
+        }
+
+        #sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #sidebar::-webkit-scrollbar-thumb {
+            background: #221f33;
+            border-radius: 3px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 2px;
+        }
+
+        .brand .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--gold);
+            box-shadow: 0 0 8px var(--gold);
+        }
+
+        .brand h1 {
+            font-size: 15px;
+            letter-spacing: 0.04em;
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .brand h1 span {
+            color: var(--gold);
+        }
+
+        .subtitle {
+            font-size: 11px;
+            color: var(--dim);
+            margin: 2px 0 14px 16px;
+            line-height: 1.5;
+        }
+
+        .section {
+            margin-bottom: 14px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.015);
+        }
+
+        .section-title {
+            font-size: 10.5px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--dim);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 14px;
+            height: 1px;
+            background: currentColor;
+            opacity: 0.5;
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 9px;
+        }
+
+        .row label {
+            font-size: 11.3px;
+            color: var(--dim);
+            flex: 0 0 auto;
+        }
+
+        .row .val {
+            font-size: 10.8px;
+            color: var(--text);
+            min-width: 58px;
+            text-align: right;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            flex: 1;
+            height: 3px;
+            background: #221f33;
+            border-radius: 2px;
+            outline: none;
+            margin: 0 8px;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--gold);
+            cursor: pointer;
+            border: 2px solid #0b0a14;
+            box-shadow: 0 0 6px var(--gold-dim);
+        }
+
+        select {
+            background: #100e1c;
+            border: 1px solid var(--line);
+            color: var(--text);
+            font-size: 11px;
+            padding: 6px 7px;
+            border-radius: 6px;
+            width: 100%;
+        }
+
+        .btnrow {
+            display: flex;
+            gap: 8px;
+            margin-top: 2px;
+        }
+
+        button {
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 12px;
+            letter-spacing: 0.02em;
+            border-radius: 7px;
+            border: 1px solid var(--line);
+            padding: 9px 10px;
+            cursor: pointer;
+            background: #12101f;
+            color: var(--text);
+            transition: all .15s ease;
+            flex: 1;
+        }
+
+        button:hover {
+            border-color: var(--gold-dim);
+            color: #fff;
+        }
+
+        button.primary {
+            background: linear-gradient(135deg, #ff8a3d, #ff5470);
+            color: #100b06;
+            border: none;
+        }
+
+        button.primary:hover {
+            filter: brightness(1.1);
+        }
+
+        button:active {
+            transform: scale(0.97);
+        }
+
+        button.small {
+            font-size: 10.3px;
+            padding: 7px 8px;
+        }
+
+        button:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .preset-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+
+        .hint {
+            font-size: 10px;
+            color: var(--dim);
+            line-height: 1.55;
+            margin-top: 6px;
+        }
+
+        .warn {
+            font-size: 10.3px;
+            color: var(--gold);
+            background: rgba(255, 138, 61, 0.08);
+            border: 1px solid var(--gold-dim);
+            border-radius: 6px;
+            padding: 7px 8px;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        #objList {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 340px;
+            overflow-y: auto;
+            padding-right: 2px;
+        }
+
+        #objList::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        #objList::-webkit-scrollbar-thumb {
+            background: #221f33;
+            border-radius: 3px;
+        }
+
+        .obj-card {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 9px 10px;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .obj-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .obj-name {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 11.5px;
+            font-weight: 600;
+        }
+
+        .swatch {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            box-shadow: 0 0 6px currentColor;
+        }
+
+        .obj-remove {
+            font-size: 14px;
+            color: var(--dim);
+            cursor: pointer;
+            padding: 0 4px;
+            line-height: 1;
+            background: none;
+            border: none;
+            flex: none;
+        }
+
+        .obj-remove:hover {
+            color: var(--danger);
+        }
+
+        .obj-meta {
+            font-size: 9.5px;
+            color: var(--dim);
+            margin-top: 4px;
+            line-height: 1.6;
+        }
+
+        /* log */
+        #eventLog {
+            max-height: 120px;
+            overflow-y: auto;
+            font-size: 10px;
+            color: var(--dim);
+            line-height: 1.7;
+        }
+
+        #eventLog::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        #eventLog::-webkit-scrollbar-thumb {
+            background: #221f33;
+            border-radius: 3px;
+        }
+
+        #eventLog .ev {
+            color: var(--text);
+        }
+
+        #eventLog .ev.merge {
+            color: var(--gold);
+        }
+
+        #main {
+            position: relative;
+            flex: 1;
+            height: 100%;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #glcanvas {
+            position: absolute;
+            inset: 0;
+        }
+
+        #flashOverlay {
+            position: absolute;
+            inset: 0;
+            background: #fff;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .08s linear;
+        }
+
+        #hud {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 270px;
+            background: rgba(8, 7, 15, 0.72);
+            backdrop-filter: blur(6px);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 14px 16px;
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            line-height: 1.8;
+            pointer-events: none;
+        }
+
+        #hud .hud-title {
+            font-size: 10px;
+            letter-spacing: 0.14em;
+            color: var(--dim);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        #hud .stat {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        #hud .stat b {
+            color: #fff;
+            font-weight: 400;
+        }
+
+        #topbar {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        #topbar .pill {
+            background: rgba(8, 7, 15, 0.72);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 7px 12px;
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #camhint {
+            position: absolute;
+            bottom: 150px;
+            left: 16px;
+            font-size: 10px;
+            color: var(--dim);
+            font-family: 'Space Mono', monospace;
+            opacity: 0.6;
+        }
+
+        #waveform-wrap {
+            position: absolute;
+            left: 16px;
+            right: 296px;
+            bottom: 16px;
+            height: 110px;
+            background: rgba(8, 7, 15, 0.72);
+            backdrop-filter: blur(6px);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #waveform-label {
+            position: absolute;
+            top: 8px;
+            left: 14px;
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.1em;
+            color: var(--dim);
+            text-transform: uppercase;
+            z-index: 2;
+        }
+
+        #waveform-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        #eventPanel {
+            position: absolute;
+            right: 16px;
+            bottom: 16px;
+            width: 264px;
+            height: 110px;
+            background: rgba(8, 7, 15, 0.72);
+            backdrop-filter: blur(6px);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 10px 12px 8px 12px;
+            overflow: hidden;
+        }
+
+        #eventPanel .lab {
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.1em;
+            color: var(--dim);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        #loading {
+            position: absolute;
+            inset: 0;
+            background: var(--void);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 50;
+            transition: opacity .6s ease;
+        }
+
+        #loading .ring {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 2px solid #221f33;
+            border-top-color: var(--gold);
+            animation: spin 1s linear infinite;
+        }
+
+        #loading span {
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            color: var(--dim);
+            letter-spacing: 0.08em;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        #glerror {
+            position: absolute;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            color: var(--danger);
+            font-family: 'Space Mono', monospace;
+            text-align: center;
+            padding: 40px;
+            z-index: 60;
+        }
+
+        ::selection {
+            background: var(--gold-dim);
+        }
+    </style>
 </head>
 
 <body>
+    <div id="app">
 
-<nav>
-  <div><b>SM</b></div>
-  <div>
-    <a href="index.html">Home</a>
-    <a href="projects.html">Projects</a>
-    <a href="research.html">Research</a>
-    <a href="blog.html">Blog</a>
-    <a href="resume.html">Resume</a>
-    <a href="contact.html">Contact</a>
-  </div>
-</nav>
+        <div id="sidebar">
+            <div class="brand">
+                <div class="dot"></div>
+                <h1>EVENT<span>HORIZON</span> LAB</h1>
+            </div>
+            <div class="subtitle">Real‑time N‑body black hole merger sandbox — Newtonian gravity, gravitational‑wave
+                orbital decay, NR‑fitted remnants, and a raymarched light‑bending renderer.</div>
 
-<div class="page hero">
+            <div class="section">
+                <div class="section-title">Scenario</div>
+                <div class="preset-grid">
+                    <button class="small" data-preset="gw150914">GW150914‑like</button>
+                    <button class="small" data-preset="equal">Equal‑mass binary</button>
+                    <button class="small" data-preset="triple">Three‑body chaos</button>
+                    <button class="small" data-preset="supermassive">Supermassive + star‑mass</button>
+                </div>
+                <div class="btnrow">
+                    <button id="addBtn">+ Add black hole</button>
+                    <button id="clearBtn">Clear all</button>
+                </div>
+                <div class="btnrow">
+                    <button class="primary" id="playBtn">▶ Run simulation</button>
+                    <button id="resetBtn">↺ Reset scene</button>
+                </div>
+            </div>
 
-<h1>
-Building autonomous robotic systems,<br>
-embedded intelligence,<br>
-and AI-driven engineering.
-</h1>
+            <div class="section">
+                <div class="section-title">Black holes <span id="objCount" class="mono"
+                        style="margin-left:auto;color:var(--dim);"></span></div>
+                <div id="objList"></div>
+                <div class="hint">A black hole's size (event‑horizon radius) is fixed entirely by its mass: r₊ =
+                    GM/c²·(1+√(1−a²)). Its average density then falls as 1/M² — supermassive holes can be less dense
+                    than air. You can't set size and density independently; that's real physics, not a simulator limit.
+                </div>
+            </div>
 
-<p>
-High school researcher focused on robotics, distributed systems,
-embedded computing, and applied machine intelligence.
-</p>
+            <div class="section">
+                <div class="section-title">Simulation</div>
+                <div class="row"><label>Time scale</label><input type="range" id="speed" min="-1" max="7" step="0.1"
+                        value="2"><span class="val" id="speedv">100×</span></div>
+                <div class="row"><label>Render quality</label>
+                    <select id="quality">
+                        <option value="cinematic">Cinematic</option>
+                        <option value="balanced" selected>Balanced</option>
+                        <option value="fast">Fast (best FPS)</option>
+                    </select>
+                </div>
+                <div class="row"><label>Accretion disks</label><input type="checkbox" id="disks" checked
+                        style="accent-color:#ff8a3d;"></div>
+                <div class="row"><label>Gravitational lensing</label><input type="checkbox" id="lensing" checked
+                        style="accent-color:#ff8a3d;"></div>
+                <div class="row"><label>Starfield</label><input type="checkbox" id="stars" checked
+                        style="accent-color:#ff8a3d;"></div>
+                <div class="row"><label>Auto‑orbit camera</label><input type="checkbox" id="autoOrbit" checked
+                        style="accent-color:#ff8a3d;"></div>
+            </div>
 
-<h2>Featured Systems</h2>
+            <div class="section">
+                <div class="section-title">Merger log</div>
+                <div id="eventLog"><span style="color:var(--dim);">No mergers yet — run the simulation.</span></div>
+            </div>
 
-<div class="grid">
+            <div class="hint">Physics notes: orbits integrate real Newtonian N‑body gravity (symplectic Euler). Close
+                pairs lose orbital energy at the exact leading‑order gravitational‑wave luminosity rate (Peters &amp;
+                Mathews 1963). Merger remnants use published numerical‑relativity fits — final spin from Rezzolla et al.
+                (2008), ringdown frequency/damping from Berti, Cardoso &amp; Will (2006) quasinormal‑mode fits, kicks
+                are an illustrative order‑of‑magnitude estimate. Light bending uses a per‑step
+                conserved‑impact‑parameter geodesic approximation (the same trick used in most real‑time black hole
+                shaders), not a full numerical‑relativity ray trace.</div>
+        </div>
 
-  <div class="card">
-    <h3>Bob</h3>
-    <p>Autonomous humanoid robotics platform.</p>
-  </div>
+        <!-- ============ MAIN VIEWPORT ============ -->
+        <div id="main">
+            <canvas id="glcanvas"></canvas>
+            <div id="flashOverlay"></div>
+            <div id="glerror">Your browser/GPU doesn't support WebGL2, which this simulation needs. Try an up‑to‑date
+                Chrome or Edge with hardware acceleration on.</div>
 
-  <div class="card">
-    <h3>Robotics Coprocessor X1</h3>
-    <p>Embedded control system for robotics architectures.</p>
-  </div>
+            <div id="topbar">
+                <div class="pill"><span class="mono" style="color:var(--dim)">t_sim</span><span class="mono"
+                        id="simClock">00:00:00</span></div>
+                <div class="pill"><span class="mono" style="color:var(--dim)">mergers</span><span class="mono"
+                        id="mergeCount">0</span></div>
+            </div>
 
-  <div class="card">
-    <h3>Research Work</h3>
-    <p>Machine learning + distributed systems research.</p>
-  </div>
+            <div id="hud">
+                <div class="hud-title">Telemetry</div>
+                <div class="stat"><span>Active bodies</span><b class="mono" id="hudBodies">—</b></div>
+                <div class="stat"><span>Closest pair sep.</span><b class="mono" id="hudSep">—</b></div>
+                <div class="stat"><span>Time to that merger</span><b class="mono" id="hudTtm">—</b></div>
+                <div class="stat"><span>System mass</span><b class="mono" id="hudMass">—</b></div>
+                <div class="stat"><span>Peak GW strain (est.)</span><b class="mono" id="hudStrain">—</b></div>
+            </div>
 
-</div>
+            <div id="camhint">drag to orbit · scroll to zoom</div>
 
-</div>
+            <div id="waveform-wrap">
+                <div id="waveform-label">Gravitational‑wave strain — closest interacting pair</div>
+                <canvas id="waveform-canvas"></canvas>
+            </div>
 
+            <div id="eventPanel">
+                <div class="lab">Live readout</div>
+                <div id="livePanel" class="mono" style="font-size:10px; color:var(--dim); line-height:1.75;"></div>
+            </div>
+
+            <div id="loading">
+                <div class="ring"></div><span>ASSEMBLING SPACETIME…</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+      
+        const G = 6.67430e-11, c = 2.99792458e8, Msun = 1.98892e30;
+        const MAXBH = 6;
+
+        const v3 = {
+            add: (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]],
+            sub: (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]],
+            scale: (a, s) => [a[0] * s, a[1] * s, a[2] * s],
+            dot: (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2],
+            cross: (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]],
+            len: (a) => Math.sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]),
+            norm: (a) => {const l = v3.len(a) || 1e-12; return [a[0] / l, a[1] / l, a[2] / l];}
+        };
+
+        function hsl2rgb(h, s, l) {
+            h /= 360;
+            function f(p, q, t) {if (t < 0) t += 1; if (t > 1) t -= 1; if (t < 1 / 6) return p + (q - p) * 6 * t; if (t < 1 / 2) return q; if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6; return p;}
+            let r, g, b;
+            if (s === 0) {r = g = b = l;} else {
+                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                const p = 2 * l - q;
+                r = f(p, q, h + 1 / 3); g = f(p, q, h); b = f(p, q, h - 1 / 3);
+            }
+            return [r, g, b];
+        }
+
+        function schwarzschildRadius(massKg) {return 2 * G * massKg / (c * c);}
+        function kerrHorizon(massKg, aStar) {
+            const a = Math.max(-0.999, Math.min(0.999, aStar));
+            return (G * massKg / (c * c)) * (1 + Math.sqrt(1 - a * a));
+        }
+        function symmetricMassRatio(m1, m2) {return (m1 * m2) / Math.pow(m1 + m2, 2);}
+        function chirpMass(m1, m2) {return Math.pow(m1 * m2, 0.6) / Math.pow(m1 + m2, 0.2);}
+        // Rezzolla et al. 2008 non-spinning final-spin fit, extended with a simplified spin term.
+        function finalSpinNonSpinning(eta) {return 2 * Math.sqrt(3) * eta - 3.5171 * eta * eta + 2.5763 * Math.pow(eta, 3);}
+        function finalSpin(eta, chiEff) {return Math.max(0, Math.min(0.9979, finalSpinNonSpinning(eta) + 0.45 * chiEff * Math.sqrt(eta)));}
+        // Radiated-energy fraction, calibrated to ~5% Mc^2 at equal mass / non-spinning.
+        function radiatedEnergyFraction(eta, chiEff) {return Math.max(0, 0.20 * eta * (1 + 0.35 * chiEff));}
+        // Berti, Cardoso & Will 2006 QNM fit, l=2,m=2,n=0 mode.
+        function qnmFrequency(Mf_kg, af) {
+            const f1 = 1.5251, f2 = -1.1568, f3 = 0.1292, q1 = 0.7000, q2 = 1.4187, q3 = -0.4990;
+            const Momega = f1 + f2 * Math.pow(1 - af, f3);
+            const Q = q1 + q2 * Math.pow(1 - af, q3);
+            const tGeom = G * Mf_kg / Math.pow(c, 3);
+            const freq = (Momega / tGeom) / (2 * Math.PI);
+            const tau = Q / (Math.PI * freq);
+            return {freq, tau};
+        }
+        function circularMergerTime(a0, m1, m2) {return Math.pow(a0, 4) * 5 * Math.pow(c, 5) / (256 * Math.pow(G, 3) * m1 * m2 * (m1 + m2));}
+        function strainAmplitude(Mc, fgw, distanceM) {return 4 * Math.pow(G * Mc, 5 / 3) * Math.pow(Math.PI * fgw, 2 / 3) / (Math.pow(c, 4) * distanceM);}
+
+        function fmt(x, digits = 3) {
+            if (x === undefined || x === null || !isFinite(x)) return '—';
+            if (Math.abs(x) >= 1e5 || (Math.abs(x) < 1e-3 && x !== 0)) return x.toExponential(digits - 1);
+            return x.toPrecision(digits);
+        }
+        function fmtTime(seconds) {
+            if (!isFinite(seconds)) return '—';
+            const yr = 365.25 * 24 * 3600;
+            if (seconds > yr * 1e3) return fmt(seconds / yr, 3) + ' yr';
+            if (seconds > 3600) return fmt(seconds / 3600, 3) + ' hr';
+            if (seconds > 60) return fmt(seconds / 60, 3) + ' min';
+            return fmt(seconds, 3) + ' s';
+        }
+        function fmtClock(seconds) {
+            const s = Math.max(0, seconds);
+            const hh = Math.floor(s / 3600).toString().padStart(2, '0');
+            const mm = Math.floor((s % 3600) / 60).toString().padStart(2, '0');
+            const ss = Math.floor(s % 60).toString().padStart(2, '0');
+            return `${hh}:${mm}:${ss}`;
+        }
+
+        let nextLabel = 1;
+        let bodies = [];           // {id,name,mass,spin,pos[3](m),vel[3](m/s),diskNormal[3],color[3],ringUntil,ringStart,ringFreq,ringTau}
+        let simTime = 0;
+        let running = false;
+        let mergerCount = 0;
+        let metersPerUnit = 2e5;   // scene-unit scale, recomputed on reset/add
+        let distanceForStrain = 400 * 3.0857e22; // 400 Mpc, used only for the illustrative strain readout
+        let waveformGain = 1e21;   // auto-adjusted so the (tiny, physical) strain is visible on screen
+        let maxStrainSeen = 1e-22;
+        let wavePhase = 0;
+
+        function newBody(mass, spin, pos, vel) {
+            const tilt = (Math.random() - 0.5) * 0.5;
+            const axis = v3.norm([Math.random() - 0.5, 0, Math.random() - 0.5]);
+            // rotate (0,1,0) by `tilt` radians around `axis` (Rodrigues' rotation)
+            const up = [0, 1, 0];
+            const rotated = v3.add(v3.add(v3.scale(up, Math.cos(tilt)), v3.scale(v3.cross(axis, up), Math.sin(tilt))), v3.scale(axis, v3.dot(axis, up) * (1 - Math.cos(tilt))));
+            const hue = (nextLabel * 67) % 360;
+            const color = hsl2rgb(hue, 0.75, 0.6);
+            const b = {
+                id: nextLabel, name: 'BH-' + nextLabel, mass, spin, pos: pos.slice(), vel: vel.slice(),
+                diskNormal: v3.norm(rotated), color, ringUntil: -1, ringStart: 0, ringFreq: 0, ringTau: 1
+            };
+            nextLabel++;
+            return b;
+        }
+
+        function systemExtent() {
+            let maxR = 1e5;
+            for (const b of bodies) maxR = Math.max(maxR, v3.len(b.pos));
+            return maxR;
+        }
+        // Picks scene scale so the whole system fits on screen AND no horizon shrinks
+        // below a visible size — whichever constraint is tighter wins, then the
+        // camera auto-zooms to fit. Called on preset/add/remove/reset, not every frame,
+        // so manual zoom during a run is preserved.
+        function recomputeScale() {
+            const ext = systemExtent();
+            let rsMin = Infinity;
+            for (const b of bodies) rsMin = Math.min(rsMin, schwarzschildRadius(b.mass));
+            if (!isFinite(rsMin)) rsMin = schwarzschildRadius(10 * Msun);
+
+            const desiredFrame = 8;        // scene units we want the system's extent to span
+            const minHorizonScene = 0.3;   // smallest a horizon is allowed to render as, in scene units
+
+            let mpu = ext / desiredFrame;
+            const maxAllowedMpu = rsMin / minHorizonScene;
+            mpu = Math.min(mpu, maxAllowedMpu);
+            mpu = Math.max(mpu, 10); // guard against degenerate zero/negative scale
+            metersPerUnit = mpu;
+
+            const sceneExtent = ext / metersPerUnit;
+            cam.dist = Math.max(sceneExtent * 1.7, 5.5);
+        }
+
+        function clearScene() {bodies = []; simTime = 0; mergerCount = 0; nextLabel = 1; document.getElementById('eventLog').innerHTML = '<span style="color:var(--dim);">No mergers yet — run the simulation.</span>';}
+
+        function loadBinary(m1, m2, s1, s2, sepFactor, eccKick, distMpc) {
+            clearScene();
+            const M1 = m1 * Msun, M2 = m2 * Msun;
+            const rs1 = schwarzschildRadius(M1), rs2 = schwarzschildRadius(M2);
+            const a0 = sepFactor * (rs1 + rs2);
+            const Mtot = M1 + M2;
+            const omega = Math.sqrt(G * Mtot / Math.pow(a0, 3));
+            const vCirc = omega * a0;
+            const f1 = M2 / Mtot, f2 = M1 / Mtot;
+            const b1 = newBody(M1, s1, [-f1 * a0, 0, 0], [0, 0, -f1 * vCirc * (1 + eccKick)]);
+            const b2 = newBody(M2, s2, [f2 * a0, 0, 0], [0, 0, f2 * vCirc * (1 + eccKick)]);
+            bodies.push(b1, b2);
+            distanceForStrain = distMpc * 3.0857e22;
+            recomputeScale();
+        }
+
+        function computeSafeDt() {
+            let minR = Infinity, maxV = 1;
+            for (let i = 0; i < bodies.length; i++) {
+                maxV = Math.max(maxV, v3.len(bodies[i].vel));
+                for (let j = i + 1; j < bodies.length; j++) {
+                    minR = Math.min(minR, v3.len(v3.sub(bodies[j].pos, bodies[i].pos)));
+                }
+            }
+            if (!isFinite(minR)) minR = 1e9;
+            return Math.min(Math.max(0.025 * minR / maxV, 1e-6), 8000);
+        }
+
+        function stepPhysics(dt) {
+            const n = bodies.length;
+            if (n === 0) return;
+            const acc = Array.from({length: n}, () => [0, 0, 0]);
+            let mergePair = null;
+            for (let i = 0; i < n; i++) {
+                for (let j = i + 1; j < n; j++) {
+                    const bi = bodies[i], bj = bodies[j];
+                    const rel = v3.sub(bj.pos, bi.pos);
+                    const r = v3.len(rel);
+                    const rsSum = schwarzschildRadius(bi.mass) + schwarzschildRadius(bj.mass);
+                    if (r <= 1.15 * rsSum) {mergePair = [i, j]; continue;}
+                    const invr3 = 1 / (r * r * r);
+                    const gi = G * bj.mass * invr3, gj = G * bi.mass * invr3;
+                    acc[i][0] += rel[0] * gi; acc[i][1] += rel[1] * gi; acc[i][2] += rel[2] * gi;
+                    acc[j][0] -= rel[0] * gj; acc[j][1] -= rel[1] * gj; acc[j][2] -= rel[2] * gj;
+                    if (r < 60 * rsSum) {
+                        const vrelVec = v3.sub(bj.vel, bi.vel);
+                        const vrel = Math.max(v3.len(vrelVec), 1);
+                        const P = 32 / 5 * Math.pow(G, 4) / Math.pow(c, 5) * Math.pow(bi.mass * bj.mass, 2) * (bi.mass + bj.mass) / Math.pow(r, 5);
+                        const vh = v3.scale(vrelVec, 1 / vrel);
+                        const dragI = P / (vrel * bi.mass), dragJ = P / (vrel * bj.mass);
+                        acc[i][0] += vh[0] * dragI; acc[i][1] += vh[1] * dragI; acc[i][2] += vh[2] * dragI;
+                        acc[j][0] -= vh[0] * dragJ; acc[j][1] -= vh[1] * dragJ; acc[j][2] -= vh[2] * dragJ;
+                    }
+                }
+            }
+            for (let i = 0; i < n; i++) {bodies[i].vel = v3.add(bodies[i].vel, v3.scale(acc[i], dt));}
+            for (let i = 0; i < n; i++) {bodies[i].pos = v3.add(bodies[i].pos, v3.scale(bodies[i].vel, dt));}
+            simTime += dt;
+            if (mergePair) {performMerge(mergePair[0], mergePair[1]);}
+        }
+
+        function physicsFrame(totalDt) {
+            let remaining = totalDt, iter = 0;
+            while (remaining > 1e-9 && iter < 600 && bodies.length > 0) {
+                const dt = Math.min(remaining, computeSafeDt());
+                stepPhysics(dt);
+                remaining -= dt;
+                iter++;
+            }
+        }
+
+        function performMerge(i, j) {
+            const bi = bodies[i], bj = bodies[j];
+            const M = bi.mass + bj.mass;
+            const eta = symmetricMassRatio(bi.mass, bj.mass);
+            const chiEff = (bi.mass * bi.spin + bj.mass * bj.spin) / M;
+            const Erad = radiatedEnergyFraction(eta, chiEff);
+            const Mf = M * (1 - Erad);
+            const af = finalSpin(eta, chiEff);
+            const pos = v3.scale(v3.add(v3.scale(bi.pos, bi.mass), v3.scale(bj.pos, bj.mass)), 1 / M);
+            let vel = v3.scale(v3.add(v3.scale(bi.vel, bi.mass), v3.scale(bj.vel, bj.mass)), 1 / M);
+            // simplified illustrative recoil kick (real fits: e.g. Gonzalez et al. 2007 / Lousto & Zlochower)
+            const massAsym = Math.abs(bi.mass - bj.mass) / M;
+            const orbNormal = v3.norm(v3.cross(v3.sub(bj.pos, bi.pos), v3.sub(bj.vel, bi.vel)));
+            const kickDir = v3.norm(v3.cross(orbNormal, v3.sub(bj.pos, bi.pos)));
+            const kickMag = 1.5e5 * massAsym * (1 + 2 * Math.abs(chiEff));
+            vel = v3.add(vel, v3.scale(kickDir, kickMag));
+            const bigger = bi.mass > bj.mass ? bi : bj;
+            const merged = newBody(Mf, af, pos, vel);
+            merged.diskNormal = bigger.diskNormal;
+            merged.color = bigger.color;
+            const qnm = qnmFrequency(Mf, af);
+            merged.ringStart = simTime; merged.ringUntil = simTime + qnm.tau * 9; merged.ringFreq = qnm.freq; merged.ringTau = qnm.tau;
+
+            const removeIdx = [i, j].sort((a, b) => b - a);
+            bodies.splice(removeIdx[0], 1); bodies.splice(removeIdx[1], 1);
+            bodies.push(merged);
+            mergerCount++;
+            document.getElementById('mergeCount').textContent = mergerCount;
+            logEvent(`<span class="ev merge">Merger</span>: ${bi.name} (${fmt(bi.mass / Msun)} M☉) + ${bj.name} (${fmt(bj.mass / Msun)} M☉) → <b>${merged.name}</b> — Mf=${fmt(Mf / Msun)} M☉, spin=${fmt(af)}, radiated ${fmt(Erad * 100)}% Mc², kick ${fmt(kickMag / 1000)} km/s`);
+            triggerFlash(pos);
+            rebuildObjectPanel();
+        }
+
+        function logEvent(html) {
+            const el = document.getElementById('eventLog');
+            if (el.children.length === 1 && el.children[0].style && el.children[0].tagName === 'SPAN' && el.textContent.includes('No mergers')) el.innerHTML = '';
+            const div = document.createElement('div');
+            div.className = 'ev';
+            div.innerHTML = `<span class="mono" style="color:#4d4863">[${fmtClock(simTime)}]</span> ${html}`;
+            el.prepend(div);
+            while (el.children.length > 12) el.removeChild(el.lastChild);
+        }
+
+        let flashT = 0;
+        function triggerFlash() {flashT = 1.0; shakeT = 0.5;}
+        let shakeT = 0;
+
+        const canvas = document.getElementById('glcanvas');
+        const gl = canvas.getContext('webgl2', {antialias: false, powerPreference: 'high-performance'});
+        if (!gl) {document.getElementById('glerror').style.display = 'flex';}
+
+        const VERT_SRC = `#version 300 es
+void main(){
+  vec2 p = vec2((gl_VertexID==2)?3.0:-1.0, (gl_VertexID==1)?3.0:-1.0);
+  gl_Position = vec4(p,0.0,1.0);
+}`;
+
+        const FRAG_SRC = `#version 300 es
+precision highp float;
+out vec4 outColor;
+
+uniform vec2 uRes;
+uniform vec3 uCamPos, uCamRight, uCamUp, uCamForward;
+uniform float uTanFov;
+uniform int uNumBH;
+uniform vec3 uBHPos[${MAXBH}];
+uniform float uBHRs[${MAXBH}];
+uniform float uBHHorizon[${MAXBH}];
+uniform vec3 uBHDiskN[${MAXBH}];
+uniform vec3 uBHColor[${MAXBH}];
+uniform float uBHDiskIn[${MAXBH}];
+uniform float uBHDiskOut[${MAXBH}];
+uniform int uShowDisk, uShowLensing, uShowStars, uMaxSteps;
+uniform float uTime;
+
+float hash(vec3 p){ return fract(sin(dot(p, vec3(12.9898,78.233,37.719)))*43758.5453123); }
+
+vec3 starfield(vec3 d){
+  vec3 col = vec3(0.0);
+  vec3 g = floor(d*380.0);
+  float h = hash(g);
+  if(h > 0.9945){
+    float b = pow(hash(g+3.1), 6.0);
+    vec3 tint = mix(vec3(0.75,0.82,1.0), vec3(1.0,0.85,0.7), hash(g+7.7));
+    col = tint * b * 4.0;
+  }
+  return col;
+}
+vec3 nebula(vec3 d){
+  float n = sin(d.x*2.1+uTime*0.01)*sin(d.y*1.7)*sin(d.z*2.3-uTime*0.007);
+  vec3 base = mix(vec3(0.01,0.01,0.03), vec3(0.05,0.02,0.06), 0.5+0.5*n);
+  return base*0.35;
+}
+
+void main(){
+  vec2 uv = (gl_FragCoord.xy/uRes)*2.0-1.0;
+  float aspect = uRes.x/uRes.y;
+  vec3 rd = normalize(uCamForward + uv.x*uTanFov*aspect*uCamRight + uv.y*uTanFov*uCamUp);
+  vec3 ro = uCamPos;
+
+  vec3 p = ro;
+  vec3 v = rd;
+  vec3 accum = vec3(0.0);
+  bool captured = false;
+
+  for(int i=0;i<160;i++){
+    if(i>=uMaxSteps) break;
+    float minDist = 1e9;
+    vec3 acc = vec3(0.0);
+    for(int b=0;b<${MAXBH};b++){
+      if(b>=uNumBH) break;
+      vec3 rel = p - uBHPos[b];
+      float r = length(rel);
+      minDist = min(minDist, r - uBHHorizon[b]);
+      if(r < uBHHorizon[b]){ captured = true; }
+      if(uShowLensing==1){
+        vec3 h = cross(rel, v);
+        float h2 = dot(h,h);
+        float r5 = pow(max(r,0.02),5.0);
+        acc += -1.5 * uBHRs[b] * h2 * rel / r5;
+      }
+    }
+    if(captured) break;
+
+    float stepSize = clamp(minDist*0.35, 0.02, 3.0);
+    v = normalize(v + acc*stepSize);
+    vec3 prevP = p;
+    p += v*stepSize;
+
+    if(uShowDisk==1){
+      for(int b=0;b<${MAXBH};b++){
+        if(b>=uNumBH) break;
+        vec3 n = uBHDiskN[b];
+        float d0 = dot(prevP-uBHPos[b], n);
+        float d1 = dot(p-uBHPos[b], n);
+        if(d0*d1 < 0.0){
+          float t = d0/(d0-d1+1e-6);
+          vec3 hitP = mix(prevP,p,t);
+          vec3 rel = hitP - uBHPos[b];
+          vec3 inPlane = rel - n*dot(rel,n);
+          float rr = length(inPlane);
+          if(rr>uBHDiskIn[b] && rr<uBHDiskOut[b]){
+            float tn = clamp((rr-uBHDiskIn[b])/(uBHDiskOut[b]-uBHDiskIn[b]),0.0,1.0);
+            vec3 hot = vec3(1.0,0.93,0.82);
+            vec3 diskCol = mix(hot, uBHColor[b], tn*tn);
+            vec3 radial = normalize(inPlane+1e-4);
+            vec3 tangent = normalize(cross(n, radial));
+            float beam = dot(tangent, v);
+            float bright = mix(0.45, 2.6, smoothstep(-1.0,1.0,beam));
+            float falloff = 1.0/(0.35+tn*2.2);
+            accum += diskCol * bright * falloff * 0.5;
+          }
+        }
+      }
+    }
+
+    if(length(p) > 300.0) break;
+  }
+
+  vec3 bg = vec3(0.0);
+  if(!captured){
+    if(uShowStars==1) bg = starfield(v);
+    bg += nebula(v);
+  }
+  vec3 col = bg + accum;
+  col = col/(col+vec3(1.0));
+  col = pow(col, vec3(1.0/2.2));
+  outColor = vec4(col,1.0);
+}`;
+
+        function compile(type, src) {
+            const s = gl.createShader(type);
+            gl.shaderSource(s, src);
+            gl.compileShader(s);
+            if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+                console.error(gl.getShaderInfoLog(s));
+            }
+            return s;
+        }
+        let prog = null, uniforms = {};
+        if (gl) {
+            prog = gl.createProgram();
+            gl.attachShader(prog, compile(gl.VERTEX_SHADER, VERT_SRC));
+            gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, FRAG_SRC));
+            gl.linkProgram(prog);
+            if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) console.error(gl.getProgramInfoLog(prog));
+            gl.useProgram(prog);
+            const vao = gl.createVertexArray();
+            gl.bindVertexArray(vao);
+
+            const names = ['uRes', 'uCamPos', 'uCamRight', 'uCamUp', 'uCamForward', 'uTanFov', 'uNumBH', 'uShowDisk', 'uShowLensing', 'uShowStars', 'uMaxSteps', 'uTime'];
+            for (const nm of names) uniforms[nm] = gl.getUniformLocation(prog, nm);
+            uniforms.uBHPos = []; uniforms.uBHRs = []; uniforms.uBHHorizon = []; uniforms.uBHDiskN = []; uniforms.uBHColor = []; uniforms.uBHDiskIn = []; uniforms.uBHDiskOut = [];
+            for (let i = 0; i < MAXBH; i++) {
+                uniforms.uBHPos.push(gl.getUniformLocation(prog, `uBHPos[${i}]`));
+                uniforms.uBHRs.push(gl.getUniformLocation(prog, `uBHRs[${i}]`));
+                uniforms.uBHHorizon.push(gl.getUniformLocation(prog, `uBHHorizon[${i}]`));
+                uniforms.uBHDiskN.push(gl.getUniformLocation(prog, `uBHDiskN[${i}]`));
+                uniforms.uBHColor.push(gl.getUniformLocation(prog, `uBHColor[${i}]`));
+                uniforms.uBHDiskIn.push(gl.getUniformLocation(prog, `uBHDiskIn[${i}]`));
+                uniforms.uBHDiskOut.push(gl.getUniformLocation(prog, `uBHDiskOut[${i}]`));
+            }
+        }
+
+        const cam = {yaw: 0.6, pitch: 0.35, dist: 22, target: [0, 0, 0]};
+        let dragging = false, lastX = 0, lastY = 0;
+        canvas.addEventListener('pointerdown', e => {dragging = true; lastX = e.clientX; lastY = e.clientY; document.getElementById('autoOrbit').checked = false;});
+        window.addEventListener('pointerup', () => dragging = false);
+        window.addEventListener('pointermove', e => {
+            if (!dragging) return;
+            const dx = e.clientX - lastX, dy = e.clientY - lastY; lastX = e.clientX; lastY = e.clientY;
+            cam.yaw -= dx * 0.005; cam.pitch = Math.max(-1.4, Math.min(1.4, cam.pitch - dy * 0.005));
+        });
+        canvas.addEventListener('wheel', e => {e.preventDefault(); cam.dist = Math.max(2, Math.min(240, cam.dist * (1 + e.deltaY * 0.001)));}, {passive: false});
+
+        const els = {
+            speed: document.getElementById('speed'), speedv: document.getElementById('speedv'),
+            quality: document.getElementById('quality'),
+            disks: document.getElementById('disks'), lensing: document.getElementById('lensing'),
+            stars: document.getElementById('stars'), autoOrbit: document.getElementById('autoOrbit'),
+            playBtn: document.getElementById('playBtn'), resetBtn: document.getElementById('resetBtn'),
+            addBtn: document.getElementById('addBtn'), clearBtn: document.getElementById('clearBtn'),
+            objList: document.getElementById('objList'), objCount: document.getElementById('objCount'),
+            hudBodies: document.getElementById('hudBodies'), hudSep: document.getElementById('hudSep'),
+            hudTtm: document.getElementById('hudTtm'), hudMass: document.getElementById('hudMass'), hudStrain: document.getElementById('hudStrain'),
+            simClock: document.getElementById('simClock'), livePanel: document.getElementById('livePanel')
+        };
+
+        const speedLabels = exp => {const v = Math.pow(10, exp); return v < 1 ? v.toFixed(2) + '×' : (v >= 1000 ? v.toExponential(0) + '×' : Math.round(v) + '×');};
+        els.speed.addEventListener('input', () => {els.speedv.textContent = speedLabels(parseFloat(els.speed.value));});
+        els.speedv.textContent = speedLabels(parseFloat(els.speed.value));
+
+        const qualityMap = {cinematic: {steps: 150, scale: 1.0}, balanced: {steps: 100, scale: 0.82}, fast: {steps: 60, scale: 0.58}};
+        els.quality.addEventListener('change', applyQuality);
+        function applyQuality() {onResize();}
+
+        els.playBtn.addEventListener('click', () => {
+            running = !running;
+            els.playBtn.textContent = running ? '⏸ Pause' : '▶ Run simulation';
+        });
+        els.resetBtn.addEventListener('click', () => {loadPreset('gw150914');});
+        els.clearBtn.addEventListener('click', () => {clearScene(); rebuildObjectPanel();});
+        els.addBtn.addEventListener('click', () => {
+            if (bodies.length >= MAXBH) {return;}
+            // Spawn just outside the current system's extent (a small multiple of it,
+            // with a floor tied to a sane orbital separation) so the new body lands
+            // near the existing black holes instead of far away at some fixed distance.
+            const rsFloor = schwarzschildRadius(60 * Msun) * 25;
+            const ext = Math.max(systemExtent() * 1.7, rsFloor);
+            const ang = Math.random() * Math.PI * 2;
+            const pos = [Math.cos(ang) * ext, (Math.random() - 0.5) * ext * 0.15, Math.sin(ang) * ext];
+            let com = [0, 0, 0], comM = 0;
+            for (const b of bodies) {com = v3.add(com, v3.scale(b.pos, b.mass)); comM += b.mass;}
+            if (comM > 0) com = v3.scale(com, 1 / comM);
+            const toCenter = v3.norm(v3.sub(com, pos));
+            const tangent = v3.norm(v3.cross([0, 1, 0], toCenter));
+            const vCircApprox = comM > 0 ? Math.sqrt(G * comM / v3.len(v3.sub(pos, com))) : 0;
+            const vel = v3.add(v3.scale(tangent, vCircApprox * 0.75), v3.scale(toCenter, vCircApprox * 0.12));
+            const mass = 25 * Msun;
+            bodies.push(newBody(mass, (Math.random() * 1.6 - 0.8), pos, vel));
+            recomputeScale();
+            rebuildObjectPanel();
+        });
+
+        document.querySelectorAll('[data-preset]').forEach(btn => btn.addEventListener('click', () => loadPreset(btn.dataset.preset)));
+
+        function loadPreset(name) {
+            running = false; els.playBtn.textContent = '▶ Run simulation';
+            if (name === 'gw150914') {loadBinary(36, 29, 0.3, -0.2, 14, 0, 410);}
+            else if (name === 'equal') {loadBinary(40, 40, 0.6, 0.6, 12, 0.15, 300);}
+            else if (name === 'supermassive') {loadBinary(4e6, 30, 0.9, 0.1, 9, 0.05, 16);}
+            else if (name === 'triple') {
+                clearScene();
+                const M = 30 * Msun;
+                const positions = [[7e8, 0, 0], [-3.5e8, 0, 6.06e8], [-3.5e8, 0, -6.06e8]];
+                for (let k = 0; k < 3; k++) {
+                    const p = positions[k];
+                    const speed = Math.sqrt(G * M / 8.08e8) * 1.02;
+                    const tangent = v3.norm(v3.cross([0, 1, 0], v3.norm(p)));
+                    bodies.push(newBody(M, 0.2 + 0.2 * k, p, v3.scale(tangent, speed)));
+                }
+                distanceForStrain = 250 * 3.0857e22;
+                recomputeScale();
+            }
+            rebuildObjectPanel();
+        }
+
+        function rebuildObjectPanel() {
+            els.objCount.textContent = `${bodies.length}/${MAXBH}`;
+            els.addBtn.disabled = bodies.length >= MAXBH;
+            els.objList.innerHTML = '';
+            for (const b of bodies) {
+                const rs = schwarzschildRadius(b.mass);
+                const rh = kerrHorizon(b.mass, b.spin);
+                const density = b.mass / ((4 / 3) * Math.PI * Math.pow(rh, 3));
+                const card = document.createElement('div');
+                card.className = 'obj-card';
+                const rgb = `rgb(${Math.round(b.color[0] * 255)},${Math.round(b.color[1] * 255)},${Math.round(b.color[2] * 255)})`;
+                card.innerHTML = `
+      <div class="obj-head">
+        <div class="obj-name"><span class="swatch" style="background:${rgb}; color:${rgb};"></span>${b.name}</div>
+        <button class="obj-remove" data-id="${b.id}">✕</button>
+      </div>
+      <div class="row"><label>Mass</label><input type="range" class="massSlider" data-id="${b.id}" min="0" max="7.3" step="0.02" value="${Math.log10(b.mass / Msun)}"><span class="val massVal">${fmt(b.mass / Msun)} M☉</span></div>
+      <div class="row"><label>Spin a/M</label><input type="range" class="spinSlider" data-id="${b.id}" min="-1" max="1" step="0.01" value="${b.spin}"><span class="val spinVal">${b.spin.toFixed(2)}</span></div>
+      <div class="obj-meta">r₊ = ${fmt(rh / 1000)} km &nbsp;·&nbsp; ρ̄ = ${fmt(density)} kg/m³</div>
+    `;
+                els.objList.appendChild(card);
+            }
+            els.objList.querySelectorAll('.obj-remove').forEach(btn => btn.addEventListener('click', () => {
+                const id = parseInt(btn.dataset.id);
+                bodies = bodies.filter(b => b.id !== id);
+                recomputeScale();
+                rebuildObjectPanel();
+            }));
+            els.objList.querySelectorAll('.massSlider').forEach(sl => sl.addEventListener('input', () => {
+                const id = parseInt(sl.dataset.id);
+                const b = bodies.find(x => x.id === id); if (!b) return;
+                b.mass = Math.pow(10, parseFloat(sl.value)) * Msun;
+                sl.parentElement.querySelector('.massVal').textContent = fmt(b.mass / Msun) + ' M☉';
+                sl.parentElement.parentElement.querySelector('.obj-meta').textContent =
+                    `r₊ = ${fmt(kerrHorizon(b.mass, b.spin) / 1000)} km · ρ̄ = ${fmt(b.mass / ((4 / 3) * Math.PI * Math.pow(kerrHorizon(b.mass, b.spin), 3)))} kg/m³`;
+            }));
+            els.objList.querySelectorAll('.spinSlider').forEach(sl => sl.addEventListener('input', () => {
+                const id = parseInt(sl.dataset.id);
+                const b = bodies.find(x => x.id === id); if (!b) return;
+                b.spin = parseFloat(sl.value);
+                sl.parentElement.querySelector('.spinVal').textContent = b.spin.toFixed(2);
+            }));
+        }
+
+        const wCanvas = document.getElementById('waveform-canvas');
+        const wCtx = wCanvas.getContext('2d');
+        function resizeWaveform() {
+            const wrap = document.getElementById('waveform-wrap');
+            wCanvas.width = Math.max(2, wrap.clientWidth * window.devicePixelRatio);
+            wCanvas.height = Math.max(2, wrap.clientHeight * window.devicePixelRatio);
+        }
+        
+        function pushStrainSample(hNorm, isRing) {
+            const w = wCanvas.width, hgt = wCanvas.height;
+            if (w < 4) return;
+            const img = wCtx.getImageData(2, 0, w - 2, hgt);
+            wCtx.putImageData(img, 0, 0);
+            wCtx.clearRect(w - 2, 0, 2, hgt);
+            const mid = hgt / 2;
+            const amp = Math.max(-1, Math.min(1, hNorm)) * mid * 0.85;
+            wCtx.fillStyle = isRing ? '#8b6bff' : '#ff8a3d';
+            wCtx.fillRect(w - 2, mid - amp, 2, Math.max(1, Math.abs(amp)));
+        }
+
+        function closestPair() {
+            let best = null, bestR = Infinity;
+            for (let i = 0; i < bodies.length; i++) for (let j = i + 1; j < bodies.length; j++) {
+                const r = v3.len(v3.sub(bodies[j].pos, bodies[i].pos));
+                if (r < bestR) {bestR = r; best = [i, j];}
+            }
+            return best ? {i: best[0], j: best[1], r: bestR} : null;
+        }
+
+        function updateTelemetry(dtSim) {
+            els.hudBodies.textContent = bodies.length;
+            let totalMass = 0; for (const b of bodies) totalMass += b.mass;
+            els.hudMass.textContent = fmt(totalMass / Msun) + ' M☉';
+            els.simClock.textContent = fmtClock(simTime);
+
+            const cp = closestPair();
+            let strainVal = 0;
+            if (cp) {
+                const bi = bodies[cp.i], bj = bodies[cp.j];
+                els.hudSep.textContent = fmt(cp.r / 1000) + ' km';
+                const tRemain = circularMergerTime(cp.r, bi.mass, bj.mass);
+                els.hudTtm.textContent = fmtTime(tRemain);
+                const Mtot = bi.mass + bj.mass;
+                const omega = Math.sqrt(G * Mtot / Math.pow(cp.r, 3));
+                const fgw = omega / Math.PI;
+                const Mc = chirpMass(bi.mass, bj.mass);
+                strainVal = strainAmplitude(Mc, fgw, distanceForStrain);
+                els.hudStrain.textContent = fmt(strainVal, 3);
+                els.livePanel.innerHTML = `Watching: ${bi.name} ↔ ${bj.name}<br>GW freq ≈ ${fmt(fgw)} Hz<br>Orbital speed ≈ ${fmt(v3.len(v3.sub(bj.vel, bi.vel)) / 1000)} km/s`;
+                maxStrainSeen = Math.max(maxStrainSeen * 0.998, Math.abs(strainVal));
+                waveformGain = 0.85 / maxStrainSeen;
+                wavePhase += 2 * Math.PI * fgw * (dtSim || 0);
+                pushStrainSample(strainVal * waveformGain * Math.cos(wavePhase), false);
+            } else {
+                els.hudSep.textContent = '—'; els.hudTtm.textContent = '—'; els.hudStrain.textContent = '—';
+                els.livePanel.innerHTML = bodies.length ? 'Single remnant — ringdown settling.' : 'No black holes in the scene.';
+            }
+            // ringdown contributions layered on top for any body currently ringing (already ~O(1) scale, no extra gain)
+            for (const b of bodies) {
+                if (simTime < b.ringUntil) {
+                    const t = simTime - b.ringStart;
+                    const env = Math.exp(-t / b.ringTau);
+                    pushStrainSample(0.9 * env * Math.cos(2 * Math.PI * b.ringFreq * t), true);
+                }
+            }
+        }
+      
+        let lastT = performance.now();
+        function onResize() {
+            const q = qualityMap[els.quality.value];
+            const w = Math.round(canvas.clientWidth * q.scale), h = Math.round(canvas.clientHeight * q.scale);
+            if (canvas.width !== w || canvas.height !== h) {canvas.width = w; canvas.height = h;}
+            if (gl) gl.viewport(0, 0, canvas.width, canvas.height);
+            resizeWaveform();
+        }
+        window.addEventListener('resize', onResize);
+
+        function render() {
+            if (!gl) return;
+            const q = qualityMap[els.quality.value];
+
+            // camera basis
+            let cf = [Math.cos(cam.pitch) * Math.sin(cam.yaw), Math.sin(cam.pitch), Math.cos(cam.pitch) * Math.cos(cam.yaw)];
+            cf = v3.norm(cf);
+            const camPos = v3.sub(cam.target, v3.scale(cf, cam.dist));
+            let right = v3.norm(v3.cross(cf, [0, 1, 0]));
+            if (v3.len(right) < 0.01) right = [1, 0, 0];
+            const up = v3.norm(v3.cross(right, cf));
+
+            let shakeOffset = [0, 0, 0];
+            if (shakeT > 0) {
+                shakeOffset = [(Math.random() - 0.5) * shakeT * 0.6, (Math.random() - 0.5) * shakeT * 0.6, (Math.random() - 0.5) * shakeT * 0.6];
+                shakeT = Math.max(0, shakeT - 0.03);
+            }
+
+            gl.useProgram(prog);
+            gl.uniform2f(uniforms.uRes, canvas.width, canvas.height);
+            gl.uniform3f(uniforms.uCamPos, camPos[0] + shakeOffset[0], camPos[1] + shakeOffset[1], camPos[2] + shakeOffset[2]);
+            gl.uniform3f(uniforms.uCamRight, right[0], right[1], right[2]);
+            gl.uniform3f(uniforms.uCamUp, up[0], up[1], up[2]);
+            gl.uniform3f(uniforms.uCamForward, cf[0], cf[1], cf[2]);
+            gl.uniform1f(uniforms.uTanFov, Math.tan((50 * Math.PI / 180) / 2));
+            gl.uniform1i(uniforms.uNumBH, Math.min(bodies.length, MAXBH));
+            gl.uniform1i(uniforms.uShowDisk, els.disks.checked ? 1 : 0);
+            gl.uniform1i(uniforms.uShowLensing, els.lensing.checked ? 1 : 0);
+            gl.uniform1i(uniforms.uShowStars, els.stars.checked ? 1 : 0);
+            gl.uniform1i(uniforms.uMaxSteps, q.steps);
+            gl.uniform1f(uniforms.uTime, simTime * 1e-6);
+
+            for (let k = 0; k < MAXBH; k++) {
+                if (k < bodies.length) {
+                    const b = bodies[k];
+                    let rh = kerrHorizon(b.mass, b.spin);
+                    let rs = schwarzschildRadius(b.mass);
+                    if (simTime < b.ringUntil) {
+                        const t = simTime - b.ringStart;
+                        const env = Math.exp(-t / b.ringTau);
+                        const wob = 1 + 0.22 * env * Math.cos(2 * Math.PI * b.ringFreq * t);
+                        rh *= wob; rs *= wob;
+                    }
+                    const su = 1 / metersPerUnit;
+                    gl.uniform3f(uniforms.uBHPos[k], b.pos[0] * su, b.pos[1] * su, b.pos[2] * su);
+                    gl.uniform1f(uniforms.uBHRs[k], rs * su);
+                    gl.uniform1f(uniforms.uBHHorizon[k], rh * su);
+                    gl.uniform3f(uniforms.uBHDiskN[k], b.diskNormal[0], b.diskNormal[1], b.diskNormal[2]);
+                    gl.uniform3f(uniforms.uBHColor[k], b.color[0], b.color[1], b.color[2]);
+                    gl.uniform1f(uniforms.uBHDiskIn[k], rh * su * 1.7);
+                    gl.uniform1f(uniforms.uBHDiskOut[k], rh * su * 5.8);
+                } else {
+                    gl.uniform3f(uniforms.uBHPos[k], 1e6, 1e6, 1e6);
+                    gl.uniform1f(uniforms.uBHRs[k], 0.0);
+                    gl.uniform1f(uniforms.uBHHorizon[k], 0.0);
+                }
+            }
+
+            gl.drawArrays(gl.TRIANGLES, 0, 3);
+        }
+
+        function frame() {
+            requestAnimationFrame(frame);
+            const now = performance.now();
+            const dtReal = Math.min((now - lastT) / 1000, 0.05);
+            lastT = now;
+
+            if (els.autoOrbit.checked && !dragging) {cam.yaw += dtReal * 0.045;}
+
+            let dtSim = 0;
+            if (running) {
+                dtSim = dtReal * Math.pow(10, parseFloat(els.speed.value));
+                physicsFrame(dtSim);
+            }
+            if (flashT > 0) {
+                document.getElementById('flashOverlay').style.opacity = flashT * 0.85;
+                flashT = Math.max(0, flashT - dtReal * 3.2);
+            } else {
+                document.getElementById('flashOverlay').style.opacity = 0;
+            }
+
+            updateTelemetry(dtSim);
+            render();
+        }
+        function init() {
+            loadPreset('gw150914');
+            onResize();
+            lastT = performance.now();
+            frame();
+            setTimeout(() => {
+                const l = document.getElementById('loading');
+                l.style.opacity = '0';
+                setTimeout(() => l.style.display = 'none', 650);
+            }, 500);
+        }
+        init();
+    </script>
 </body>
+
 </html>
