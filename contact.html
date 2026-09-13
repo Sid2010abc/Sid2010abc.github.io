@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact — Sidhant Maloo</title>
+  <meta name="description" content="Get in touch with Sidhant Maloo.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+
+<body>
+  <canvas id="circuit-bg" aria-hidden="true"></canvas>
+
+  <div class="page-shell">
+
+    <header class="site-header">
+      <div class="wrap">
+        <a href="index.html" class="brand">
+          <span class="chip">SM</span>
+          <span>Sidhant Maloo<small>Aspiring Engineer</small></span>
+        </a>
+        <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+        <nav class="primary-nav">
+          <a href="index.html">Home</a>
+          <div class="has-sub">
+            <a href="about.html">About</a>
+            <div class="sub-menu">
+              <a href="about.html">About</a>
+              <a href="academics.html">Academics</a>
+              <a href="beyond-the-build.html">Beyond the Build</a>
+            </div>
+          </div>
+          <div class="has-sub">
+            <a href="projects/index.html">Projects</a>
+            <div class="sub-menu">
+              <a href="projects/robotics.html">Robotics</a>
+              <a href="projects/simulations.html">Simulations</a>
+              <a href="projects/research.html">Research</a>
+              <a href="projects/notebook.html">Notebook</a>
+            </div>
+          </div>
+          <a href="resume.html">Resume</a>
+          <a href="contact.html" class="active">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="tight" style="padding-top:56px;">
+        <div class="wrap">
+          <span class="eyebrow">Contact</span>
+          <h1>Let's connect.</h1>
+          <p class="lede">
+            Reach out about a project, a question, or an opportunity. I'll be sure to get back to you as soon as
+            possible.
+          </p>
+        </div>
+      </section>
+
+      <section class="tight">
+        <div class="wrap contact-grid">
+
+          <div>
+            <!-- This form opens Gmail's web compose window (in a new tab) instead of the
+                 visitor's default mail app, pre-filled with their name/email/message.
+                 Note: this only auto-fills cleanly if the visitor is signed into a Google
+                 account in that browser tab — otherwise Gmail will ask them to sign in first.
+                 To collect submissions directly instead, swap this for a service like Formspree. -->
+            <form id="contact-form">
+              <div class="field">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" required>
+              </div>
+              <div class="field">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+              </div>
+              <div class="field">
+                <label for="message">Message</label>
+                <textarea id="message" name="message" rows="6" required></textarea>
+              </div>
+              <button type="submit" class="btn solid">Send message</button>
+            </form>
+          </div>
+
+          <div>
+            <div class="panel">
+              <span class="eyebrow">Direct lines</span>
+              <p></p>
+              <ul class="contact-list">
+                <li>
+                  <span class="k">Email</span>
+                  <span class="v"><a href="https://mail.google.com/mail/?view=cm&fs=1&to=sidhmaloo@gmail.com"
+                      target="_blank" rel="noopener">sidhmaloo@gmail.com</a></span>
+                </li>
+                <li>
+                  <span class="k">GitHub</span>
+                  <span class="v"><a href="https://github.com/sid2010abc" target="_blank"
+                      rel="noopener">github.com/sid2010abc</a></span>
+                </li>
+                <!-- No LinkedIn yet — add a matching <li> above (copy the GitHub one) if he makes one later -->
+                <li>
+                  <span class="k">Location</span>
+                  <span class="v">Huntley, Illinois</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <span>© 2026 Sidhant Maloo — designed &amp; built from scratch.</span>
+        <div class="footer-links">
+          <a href="projects/index.html">Projects</a>
+          <a href="resume.html">Resume</a>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+  <script src="js/circuit-bg.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    // Sends the contact form to Gmail's web compose instead of the OS default mail app.
+    document.getElementById('contact-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var name = document.getElementById('name').value;
+      var email = document.getElementById('email').value;
+      var message = document.getElementById('message').value;
+
+      var subject = encodeURIComponent('Message from ' + name);
+      var body = encodeURIComponent(
+        message + '\n\n— ' + name + ' (' + email + ')'
+      );
+
+      var gmailUrl = 'https://mail.google.com/mail/?view=cm&fs=1&to=sidhmaloo@gmail.com'
+        + '&su=' + subject
+        + '&body=' + body;
+
+      window.open(gmailUrl, '_blank');
+    });
+  </script>
+</body>
+
+</html>

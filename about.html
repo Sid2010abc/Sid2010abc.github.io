@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About — Sidhant Maloo</title>
+  <meta name="description" content="About Sidhant Maloo — background, timeline, and technical focus.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+
+<body>
+  <canvas id="circuit-bg" aria-hidden="true"></canvas>
+
+  <div class="page-shell">
+
+    <header class="site-header">
+      <div class="wrap">
+        <a href="index.html" class="brand">
+          <span class="chip">SM</span>
+          <span>Sidhant Maloo<small>Aspiring Engineer</small></span>
+        </a>
+        <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+        <nav class="primary-nav">
+          <a href="index.html">Home</a>
+          <div class="has-sub open">
+            <a href="about.html" class="active">About</a>
+            <div class="sub-menu">
+              <a href="about.html" class="active">About</a>
+              <a href="academics.html">Academics</a>
+              <a href="beyond-the-build.html">Beyond the Build</a>
+            </div>
+          </div>
+          <div class="has-sub">
+            <a href="projects/index.html">Projects</a>
+            <div class="sub-menu">
+              <a href="projects/robotics.html">Robotics</a>
+              <a href="projects/simulations.html">Simulations</a>
+              <a href="projects/research.html">Research</a>
+              <a href="projects/notebook.html">Notebook</a>
+            </div>
+          </div>
+          <a href="resume.html">Resume</a>
+          <a href="contact.html">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="tight" style="padding-top:56px;">
+        <div class="wrap">
+          <span class="eyebrow">About</span>
+          <h1>Building things that move, sense, and learn as I do the same.</h1>
+          <p class="lede">
+            I'm a junior at Huntley High School headed toward a computer
+            engineering major, with a focus on AI, robotics, and the future of computers. I like problems
+            that live at the boundary of hardware and software, Where a line of
+            code has to survive contact with the forces of the universe. On my own, I explored AI, then apply it to
+            Robotics, and am now looking to make computers better through quantum computing.
+          </p>
+        </div>
+      </section>
+
+      <section class="tight">
+        <div class="wrap about-grid">
+          <div>
+            <h2>My Favorite Activities</h2>
+            <ul class="timeline">
+              <li>
+                <span class="t-date">Aug 2024 – Present</span>
+                <h3>State Math Team</h3>
+                <p>Lead and organize practices with our school's ICTM state team, mentoring teammates on problem-solving
+                  strategy and receiving recognition for it from the Illinois House of Representatives and HHS'
+                  Breakfast of Champions. Two-time regional champion and state competitor.</p>
+              </li>
+              <li>
+                <span class="t-date">Apr 2026 – Present</span>
+                <h3>Code Ninjas Sensei — Upper Belt Lead</h3>
+                <p>Supervise and tutor students across a wide age range in Unity, Java, and core software skills.</p>
+              </li>
+              <li>
+                <span class="t-date">Ongoing</span>
+                <h3>Independent projects</h3>
+                <p>Robotics builds, simulations, and research, documented in the <a
+                    href="projects/notebook.html">notebook</a>. Pursuing college courses in interesting fields through
+                  MIT OCW and Mchenry Comunity College as can be seen on my Github.</p>
+              </li>
+              <li>
+                <span class="t-date">Aug 2024 – May 2026</span>
+                <h3>VEX V5 Robotics State Team — Builder, Designer &amp; Programmer</h3>
+                <p>Programmed autonomous and driver-controlled behavior with GPS, vision, bumper, and color sensors;
+                  contributed to mechanical design and iterative prototyping. Helped earn the Think Award. However, we
+                  now fight to stay alive as a club at our school.</p>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <div class="spike-block">
+              <span class="eyebrow">What I'm All About:</span>
+              <h2 style="margin-top:10px;">I learn systems by building them.</h2>
+
+              <!-- Signature graphic: the design→build→test→improve loop, fed by
+                 the three domains I build in. Swap labels/domains below if
+                 your focus shifts — see the <text> elements marked EDIT. -->
+              <svg class="spike-svg" viewBox="0 0 480 400" role="img" aria-labelledby="spikeTitle">
+                <title id="spikeTitle">A diagram showing Robotics, Hardware, and Simulations feeding a continuous
+                  design, build, test, improve loop</title>
+
+                <!-- traces connecting the three domains into the loop -->
+                <path class="spike-trace" d="M85,75 L85,162 L192,162" />
+                <path class="spike-trace" d="M395,75 L395,162 L288,162" />
+                <path class="spike-trace" d="M240,345 L240,278" />
+
+                <!-- via dots where each domain feeds into the loop -->
+                <circle class="spike-via" cx="192" cy="162" r="3" />
+                <circle class="spike-via" cx="288" cy="162" r="3" />
+                <circle class="spike-via" cx="240" cy="278" r="3" />
+
+                <!-- domain chips -->
+                <g class="spike-chip">
+                  <rect x="50" y="46" width="70" height="30" rx="5" />
+                  <text x="85" y="65">Software</text>
+                </g>
+                <g class="spike-chip">
+                  <rect x="360" y="46" width="70" height="30" rx="5" />
+                  <text x="395" y="65">Hardware</text>
+                </g>
+                <g class="spike-chip">
+                  <rect x="188" y="345" width="104" height="30" rx="5" />
+                  <text x="240" y="364">Exploration</text>
+                </g>
+
+                <!-- the loop itself -->
+                <circle class="spike-loop" cx="240" cy="210" r="68" />
+                <path class="spike-arrow" d="M240,142 l-6,10 l12,0 z" />
+
+                <text class="spike-stage" x="240" y="108" text-anchor="middle">Design</text>
+                <text class="spike-stage" x="330" y="214" text-anchor="start">Improve</text>
+                <text class="spike-stage" x="240" y="322" text-anchor="middle">Learn</text>
+                <text class="spike-stage" x="150" y="214" text-anchor="end">Experiment</text>
+              </svg>
+
+              <p class="lede" style="margin-top:6px;">
+                I understand complex systems by building them, from robotics and computer hardware to physics
+                simulations, then testing and improving them until I understand how they work.
+              </p>
+            </div>
+
+            <hr class="divider" style="margin:32px 0;">
+
+            <h3><strong>In My Community</strong> ... And Beyond</h3>
+            <p>
+              I started and now mentor community chess and coding clubs for
+              elementary students at local schools and libraries. I've put in 500+ hours volunteering with
+              the Huntley library and Farmers' Market to teach others a finer appreciation for our magnificent world. On
+              the school side, I represent students on the Principal Student Leadership Council
+              and serve as Treasurer for the North Central District Student Council, also called the
+              student council of student councils. I use resources from MIT's OCW classes and Mchenry Community College
+              to learn about that which my high school cannot teach.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <span>© 2026 Sidhant Maloo — designed &amp; built from scratch.</span>
+        <div class="footer-links">
+          <a href="projects/index.html">Projects</a>
+          <a href="resume.html">Resume</a>
+          <a href="contact.html">Contact</a>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+  <script src="js/circuit-bg.js"></script>
+  <script src="js/main.js"></script>
+</body>
+
+</html>

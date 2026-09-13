@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Beyond the Build — Sidhant Maloo</title>
+  <meta name="description" content="Books, music, and photography — outside the lab.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+
+<body>
+  <canvas id="circuit-bg" aria-hidden="true"></canvas>
+
+  <div class="page-shell">
+
+    <header class="site-header">
+      <div class="wrap">
+        <a href="index.html" class="brand">
+          <span class="chip">SM</span>
+          <span>Sidhant Maloo<small>Aspiring Engineer</small></span>
+        </a>
+        <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+        <nav class="primary-nav">
+          <a href="index.html">Home</a>
+          <div class="has-sub open">
+            <a href="about.html">About</a>
+            <div class="sub-menu">
+              <a href="about.html">About</a>
+              <a href="academics.html">Academics</a>
+              <a href="beyond-the-build.html" class="active">Beyond the Build</a>
+            </div>
+          </div>
+          <div class="has-sub">
+            <a href="projects/index.html">Projects</a>
+            <div class="sub-menu">
+              <a href="projects/robotics.html">Robotics</a>
+              <a href="projects/simulations.html">Simulations</a>
+              <a href="projects/research.html">Research</a>
+              <a href="projects/notebook.html">Notebook</a>
+            </div>
+          </div>
+          <a href="resume.html">Resume</a>
+          <a href="contact.html">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="tight" style="padding-top:56px;">
+        <div class="wrap">
+          <span class="eyebrow">About / Beyond the Build</span>
+          <h1>The rest of it.</h1>
+          <p>
+            I am glad to see you visit this page. I believe I am more than the numbers on my transript and I believe
+            everyone should value the arts. Learn about some of them below.
+          </p>
+
+          <!-- Jump-nav — one button per section below. Keep hrefs in sync with each section's id if you rename one. -->
+          <div class="btn-row" style="margin-top:24px;">
+            <a href="#books" class="btn">Books</a>
+            <a href="#f1" class="btn">Formula 1</a>
+            <a href="#cars" class="btn">Automotives</a>
+            <a href="#photography" class="btn">Photography</a>
+            <a href="#section-5" class="btn">Music</a>
+            <a href="#section-6" class="btn">My Idols</a>
+            <a href="#section-7" class="btn">Philosophy</a>
+            <a href="#section-8" class="btn">My Motto</a>
+          </div>
+        </div>
+      </section>
+
+      <section id="books" class="tight">
+        <div class="wrap">
+          <div class="panel">
+            <h2>Books</h2>
+            <p style="font-size:1rem; margin-bottom:10px;">
+              <small>After reading Susanna Clarke's book, Piranesi, my love for reading was rekindled. However, I now
+                chase
+                literature that make the mind work. I want it to invoke thought process and confusion. These are some of
+                my
+                favorite recent reads.</small>
+            </p>
+            <ul class="timeline">
+              <li>
+                <h3>Piranesi — Susanna Clarke</h3>
+                <p>It stuck with me because of how it turns isolation and an unfamiliar world into something strangely
+                  beautiful and meaningful.</p>
+              </li>
+
+              <li>
+                <h3>A Brief History of Time — Stephen Hawking</h3>
+                <p>It made the scale of the universe feel real to me and pushed me to think more seriously about the
+                  physics behind the questions I was already curious about.</p>
+              </li>
+
+              <li>
+                <h3>Animal Farm — George Orwell</h3>
+                <p>It stuck with me because it showed how easily ideals can be reshaped when people stop questioning who
+                  has power and why.</p>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="f1" class="tight">
+        <div class="wrap">
+          <div class="panel">
+            <span class="eyebrow">
+              <large>
+                <h2>Formula 1 Racing</h2>
+              </large>
+            </span>
+
+            <p style="margin-top:10px;">
+              What I love most about Formula 1 is how every part of the sport is connected.
+              The car, driver, engineers, pit crew, strategy, and even tiny aerodynamic decisions
+              can all determine the outcome of a race. It is one of the few sports where
+              engineering and athletic performance are pushed to such an extreme at the same time.
+            </p>
+
+            <div class="card-grid" style="margin-top:24px;">
+
+              <div class="card">
+                <span class="eyebrow">Favorite Driver</span>
+                <h3>George Russell</h3>
+                <p>
+                  A highly technical and consistent driver who combines speed with precision
+                  and strong racecraft.
+                </p>
+              </div>
+
+              <div class="card" style="margin-top:10px;">
+                <span class="eyebrow">Favorite Pit Crew</span>
+                <h3>McLaren</h3>
+                <p>
+                  Known for extremely fast and coordinated pit stops, where timing and teamwork
+                  have to be nearly perfect.
+                </p>
+              </div>
+
+              <div class="card" style="margin-top:10px;">
+                <span class="eyebrow">Favorite Team</span>
+                <h3>Mercedes</h3>
+                <p>
+                  A team with a strong engineering culture and a long history of pushing
+                  performance, technology, and efficiency in Formula 1.
+                </p>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+
+      <section id="cars" class="tight">
+        <div class="wrap">
+          <div class="panel" style="display:flex; align-items:center; gap:32px; flex-wrap:wrap;">
+
+            <!-- Audi R8 image -->
+            <div style="flex:1; min-width:280px;">
+              <img src="beyond_imgs/audi.jpg" alt="Audi R8" style="width:100%; border-radius:12px; display:block;">
+            </div>
+
+            <!-- Audi R8 information -->
+            <div style="flex:1; min-width:280px;">
+              <span class="eyebrow">Automotive Engineering</span>
+
+              <h2 style="margin-top:10px;">Audi R8</h2>
+
+              <p style="margin-top:14px;">
+                The Audi R8 is my favorite car because it combines a naturally aspirated V10,
+                all-wheel drive, high-revving performance, and an extremely lightweight
+                aluminum-intensive construction into a road car that feels heavily influenced
+                by motorsport engineering.
+              </p>
+
+              <div class="tag-row">
+                <span class="tag">5.2L V10</span>
+                <span class="tag">602 HP</span>
+                <span class="tag">413 lb-ft</span>
+                <span class="tag">Quattro AWD</span>
+                <span class="tag">7-Speed S Tronic</span>
+                <span class="tag">0–60 MPH: 3.1s</span>
+                <span class="tag">Top Speed: 205 MPH</span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+
+      <section id="photography">
+        <div class="wrap">
+          <div class="panel">
+            <h2>Photography</h2>
+            <p style="margin-bottom:20px;">
+              I have always apreciated the visual arts despite my grave lack of talent in them. However, I have
+              undertaken
+              a mission of creating an album of my high school days to keep their memory alive. Although my camera is
+              old,
+              my skills are new. As I take more pictures, be it at tournaments, events, or day to day occurences, I hope
+              to see myself improve greatly.</p>
+            <div class="grid grid-3">
+
+              <div class="thumb"
+                style="aspect-ratio:4/5; border-radius:8px; border:1px solid var(--solder-600); overflow:hidden; padding:0;">
+                <img src="beyond_imgs/camera.png" alt="Camera"
+                  style="width:100%; height:100%; object-fit:cover; display:block;">
+              </div>
+
+              <div class="thumb"
+                style="aspect-ratio:4/5; border-radius:8px; border:1px solid var(--solder-600); overflow:hidden; padding:0;">
+                <img src="beyond_imgs/collage.png" alt="Photo collage"
+                  style="width:100%; height:100%; object-fit:cover; display:block;">
+              </div>
+
+              <div class="thumb"
+                style="aspect-ratio:4/5; border-radius:8px; border:1px solid var(--solder-600); overflow:hidden; padding:0;">
+                <img src="beyond_imgs/dog.png" alt="Dog"
+                  style="width:100%; height:100%; object-fit:cover; display:block;">
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section id="section-5" class="tight">
+        <div class="wrap">
+          <div class="panel">
+
+            <span class="eyebrow">Music</span>
+            <h2 style="margin-top:10px;">Music</h2>
+            <p style="margin-top:10px;">
+            <p style="font-size:1rem; margin-bottom:14px;">
+              <small>"Without music, life would be a mistake" (Twilight of the Idols, Fredrich Nietzsche). However,
+                Spotify can only go so far. On my own I have experimented with the tools below.</small>
+            </p>
+            <ul class="timeline">
+              <li>
+                <h4>Flute</h4>
+              </li>
+              <li>
+                <h4>Piano</h4>
+              </li>
+              <li>
+                <h4>Harmonica</h4>
+              </li>
+              <li>
+                <h4>Native American Flute</h4>
+              </li>
+              <li>
+                <h4>Bugle</h4>
+              </li>
+              <li>
+                <h4>Recorder</h4>
+              </li>
+              <li>
+                <h4>Waveform <small>(A Digital Audio Workstation)</small></h4>
+              </li>
+            </ul>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="section-6" class="tight">
+        <div class="wrap">
+          <div class="panel">
+
+            <span class="eyebrow">Idols</span>
+            <h2 style="margin-top:10px;">Who I'd want in the room</h2>
+            <p style="margin-top:14px;">
+              These are people who changed how their whole field
+              thinks by testing and trusting an idea further than anyone else was willing to.
+            </p>
+
+            <ul class="timeline" style="margin-top:20px;">
+              <li>
+                <h3>David Deutsch</h3>
+                <p>Argued that a quantum computer isn't just a faster computer, it's
+                  proof that computation is a law of physics and reality. He also wrote some great books.</p>
+              </li>
+
+              <li>
+                <h3>Paul Dirac</h3>
+                <p>Predicted antimatter straight out of an equation, years before
+                  anyone found it. Trusted the math even when it said something that
+                  sounded absurd.</p>
+              </li>
+
+              <li>
+                <h3>Scott Aaronson</h3>
+                <p>A complexity theorist who's spent his career explaining
+                  why certain problems will always be hard and explained that idea to people outside his field.</p>
+              </li>
+
+              <li>
+                <h3>Umesh Vazirani</h3>
+                <p>Helped found quantum computational complexity as its own field,
+                  back when most people hadn't decided quantum computers were worth
+                  taking seriously yet.</p>
+              </li>
+
+              <li>
+                <h3>Leslie Lamport</h3>
+                <p>Built the theoretical tools that let you prove a distributed
+                  system is actually correct, instead of just hoping it holds up
+                  under load.</p>
+              </li>
+            </ul>
+
+          </div>
+        </div>
+      </section>
+
+      <section id="section-7" class="tight">
+        <div class="wrap">
+          <div class="panel">
+
+            <span class="eyebrow">Philosophy</span>
+            <h2 style="margin-top:10px;">Through Philosophy, Thought Prospers</h2>
+            <p style="margin-top:14px;">
+            <ul>
+              <li><Strong>Immanuel Kant</strong> — The idea that how you act matters more than what you get out of it
+                has stuck with me
+                since I first read from his works.</li>
+              <li><strong>Marcus Aurelius</strong> — His stoic take on control and duty feels close to how I think about
+                everything. If
+                you can't do something yet, then work your way up to it.</li>
+              <li><strong>Bertrand Russell</strong> — I like how he pushed for clear thinking over comfortable answers.
+                In the real
+                world, comfortability is much more so a state of mind than something to strive for.</li>
+            </ul>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="section-8" class="tight">
+        <div class="wrap">
+          <div class="panel">
+
+            <span class="eyebrow">My Motto</span>
+            <h2 style="margin-top:10px;">My Motto</h2>
+            <p style="margin-top:14px;">
+              Etiam ferrum menti a manu fictae cedet, roughly "even iron yields to a mind shaped by the hand." The idea
+              is that knowledge doesn't really count until you've built something with it. Theory alone doesn't bend
+              anything, but a mind that's learned by doing can shape even the hardest material.
+
+            </p>
+            <p><Small> I realize this is a bit 'about the build' but it is also how I treat all my favorite parts of
+                life. You will find this motto all over the website. <small>Also, Latin is really cool.</small></Small>
+            </p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <span>© 2026 Sidhant Maloo — designed &amp; built from scratch.</span>
+        <div class="footer-links">
+          <a href="projects/index.html">Projects</a>
+          <a href="resume.html">Resume</a>
+          <a href="contact.html">Contact</a>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+  <script src="js/circuit-bg.js"></script>
+  <script src="js/main.js"></script>
+</body>
+
+</html>

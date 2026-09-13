@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Academics — Sidhant Maloo</title>
+  <meta name="description" content="Coursework, self-study through MIT OpenCourseWare, and test scores.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/pages.css">
+
+  <style>
+    /*Bit out of place but felt necessary at the moment*/
+    .course-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .course-card {
+      padding: 24px;
+      border: 1px solid var(--solder-600);
+      border-radius: 12px;
+      background: var(--solder-800);
+    }
+
+    .course-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .course-status {
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      font-family: var(--font-mono);
+      color: var(--silk-faint);
+    }
+
+    .course-card h3 {
+      margin: 0 0 8px;
+    }
+
+    .course-school {
+      font-size: 0.85rem;
+      color: var(--silk-faint);
+      margin-bottom: 16px;
+    }
+
+    .course-card p:last-child {
+      margin-bottom: 0;
+    }
+
+    .course-card.planned {
+      opacity: 0.8;
+    }
+
+    /* Test-score cards reuse .course-card but lead with a big number */
+    .score-card .score-num {
+      font-family: var(--font-mono);
+      font-size: 2.2rem;
+      color: var(--copper);
+      line-height: 1;
+      margin-bottom: 10px;
+    }
+
+    .subsection-head {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin: 40px 0 20px;
+    }
+
+    .subsection-head:first-of-type {
+      margin-top: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="circuit-bg" aria-hidden="true"></canvas>
+
+  <div class="page-shell">
+
+    <header class="site-header">
+      <div class="wrap">
+        <a href="index.html" class="brand">
+          <span class="chip">SM</span>
+          <span>Sidhant Maloo<small>Aspiring Engineer</small></span>
+        </a>
+        <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+        <nav class="primary-nav">
+          <a href="index.html">Home</a>
+          <div class="has-sub open">
+            <a href="about.html">About</a>
+            <div class="sub-menu">
+              <a href="about.html">About</a>
+              <a href="academics.html" class="active">Academics</a>
+              <a href="beyond-the-build.html">Beyond the Build</a>
+            </div>
+          </div>
+          <div class="has-sub">
+            <a href="projects/index.html">Projects</a>
+            <div class="sub-menu">
+              <a href="projects/robotics.html">Robotics</a>
+              <a href="projects/simulations.html">Simulations</a>
+              <a href="projects/research.html">Research</a>
+              <a href="projects/notebook.html">Notebook</a>
+            </div>
+          </div>
+          <a href="resume.html">Resume</a>
+          <a href="contact.html">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="tight" style="padding-top:56px;">
+        <div class="wrap">
+          <span class="eyebrow">About / Academics</span>
+          <h1>What I'm learning, on and off the transcript.</h1>
+          <p class="lede">
+            I like to learn and wouldn't mind doing this for many years. However, high school classes cannot teach me
+            everything so I am trying to take classes at McHenry Community College and have been using MIT's OCW
+            courses.
+            <br><small><small>Note: This section is a bit ... cringe, as some would put it. These numbers cannot convey
+                who I am nearly as well as the other two subpages under 'About'. Please take a moment to look at
+                those.</small></small>
+          </p>
+
+          <!-- Jump-nav — keep hrefs in sync with each section's id if you rename one -->
+          <div class="btn-row" style="margin-top:24px;">
+            <a href="#coursework" class="btn">Coursework</a>
+            <a href="#ocw" class="btn">Outside HHS</a>
+            <a href="#test-scores" class="btn">Test Scores</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Stat strip — reuses the homepage hero-meta component -->
+      <section class="tight">
+        <div class="wrap">
+          <div class="hero-meta">
+            <div><strong>3.97</strong>GPA, unweighted</div>
+            <div><strong>4.62</strong>GPA, Weighted</div>
+            <div><strong>PLTW Digital Electronics</strong>Favorite Class</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="coursework" class="tight">
+        <div class="wrap">
+          <h2>2026-2027 Coursework</h2>
+          <div class="course-grid" style="margin-top:20px;">
+
+            <div class="course-card">
+              <div class="course-top">
+                <span class="tag copper">Social Sciences</span>
+              </div>
+              <h3>AP Economics</h3>
+              <p>Taking economics to understand the systems behind markets, innovation, and the value technology
+                creates.</p>
+            </div>
+
+            <div class="course-card">
+              <div class="course-top">
+                <span class="tag copper">Language Arts</span>
+              </div>
+              <h3>AP English Language Blended</h3>
+              <p>Strengthening my ability to communicate complex ideas clearly and persuasively.</p>
+            </div>
+
+            <div class="course-card">
+              <div class="course-top">
+                <span class="tag copper">Math</span>
+              </div>
+              <h3>AP Statistics</h3>
+              <p>Learning how to work with uncertainty and data, skills increasingly important to engineering and
+                research.</p>
+            </div>
+
+            <div class="course-card">
+              <div class="course-top">
+                <span class="tag copper">Elective</span>
+              </div>
+              <h3>PLTW Digital Electronics</h3>
+              <p>Exploring the digital logic and hardware that form the foundation of modern computing systems.</p>
+            </div>
+
+            <div class="course-card">
+              <div class="course-top">
+                <span class="tag copper">Math</span>
+              </div>
+              <h3>AP Calculus BC</h3>
+              <p>Building the mathematical foundation needed to model and understand increasingly complex systems.</p>
+            </div>
+
+            <div class="course-card">
+              <div class="course-top">
+                <span class="tag copper">Physical Education</span>
+              </div>
+              <h3>PE 11/12 Blended</h3>
+              <p>Completing my physical education requirement while maintaining flexibility for academics and
+                projects.</p>
+            </div>
+
+            <div class="course-card">
+              <div class="course-top">
+                <span class="tag copper">Science</span>
+              </div>
+              <h3>Chemistry Honors Blended</h3>
+              <p>Expanding my understanding of physical systems and the scientific principles underlying the
+                technology I build.</p>
+            </div>
+
+          </div>
+        </div>
+      </section>
+      <section id="test-scores" class="tight">
+        <div class="wrap">
+          <h2>Test Scores</h2>
+          <div class="course-grid" style="margin-top:20px;">
+
+            <div class="course-card score-card">
+              <div class="score-num">5</div>
+              <p class="course-school" style="margin-bottom:0;">AP Computer Science A</p>
+            </div>
+
+            <div class="course-card score-card">
+              <div class="score-num">5</div>
+              <p class="course-school" style="margin-bottom:0;">AP Computer Science Principles</p>
+            </div>
+
+            <div class="course-card score-card">
+              <div class="score-num">5</div>
+              <p class="course-school" style="margin-bottom:0;">AP Human Geography</p>
+            </div>
+
+            <div class="course-card score-card">
+              <div class="score-num">5</div>
+              <p class="course-school" style="margin-bottom:0;">AP United States Government and Politics</p>
+            </div>
+
+            <div class="course-card score-card">
+              <div class="score-num">5</div>
+              <p class="course-school" style="margin-bottom:0;">AP Precalculus</p>
+            </div>
+
+            <div class="course-card score-card">
+              <div class="score-num">4</div>
+              <p class="course-school" style="margin-bottom:0;">AP Physics 1</p>
+            </div>
+
+            <div class="course-card score-card">
+              <div class="score-num">32/32</div>
+              <p class="course-school" style="margin-bottom:0;">PreACT 9</p>
+            </div>
+
+          </div>
+        </div>
+      </section>
+      <section id="ocw">
+        <div class="wrap">
+          <h2>Outside Huntley High School</h2>
+          <a href="#ocw-completed" class="btn">Completed</a>
+          <a href="#ocw-inprogress" class="btn">In Progress</a>
+          <a href="#ocw-planned" class="btn">Planned</a>
+          <p style="font-size:1rem; margin:12px 0 8px; max-width:140ch;">
+            I pursue mathematics, computational logic, and the future of engineering beyond my high school
+            coursework through MIT OpenCourseWare and, soon, Mchenry County College, building toward a deeper
+            understanding of computer engineering and quantum computing.
+          </p>
+
+          <div class="subsection-head">
+            <h3 id="ocw-completed" style="margin:0;">Completed</h3>
+          </div>
+          <div class="course-grid">
+
+            <div class="course-card completed">
+              <div class="course-top">
+                <span class="tag copper">18.01</span>
+                <span class="course-status">COMPLETED</span>
+              </div>
+              <h3>Single Variable Calculus</h3>
+              <p class="course-school">MIT OpenCourseWare · David Jerison</p>
+              <p>
+                Completed MIT OpenCourseWare's 18.01 course, studying single-variable
+                calculus independently.
+              </p>
+            </div>
+
+          </div>
+
+          <div class="subsection-head">
+            <h3 id="ocw-inprogress" style="margin:0;">In Progress</h3>
+          </div>
+          <div class="course-grid">
+
+            <div class="course-card current">
+              <div class="course-top">
+                <span class="tag copper">18.06</span>
+                <span class="course-status">IN PROGRESS</span>
+              </div>
+              <h3>Linear Algebra</h3>
+              <p class="course-school">MIT OpenCourseWare</p>
+              <p>
+                Currently studying linear algebra as part of the mathematical
+                foundation for computer engineering and quantum computing.
+              </p>
+            </div>
+
+          </div>
+
+          <div class="subsection-head">
+            <h3 id="ocw-planned" style="margin:0;">Planned</h3>
+          </div>
+          <div class="course-grid">
+
+            <div class="course-card planned">
+              <div class="course-top">
+                <span class="tag copper">6.042J</span>
+                <span class="course-status">PLANNED</span>
+              </div>
+              <h3>Mathematics for Computer Science</h3>
+              <p class="course-school">MIT OpenCourseWare</p>
+              <p>
+                Planned study of discrete mathematics, logic, and mathematical
+                reasoning for computer science.
+              </p>
+            </div>
+
+            <div class="course-card planned">
+              <div class="course-top">
+                <span class="tag copper">6.006</span>
+                <span class="course-status">PLANNED</span>
+              </div>
+              <h3>Introduction to Algorithms</h3>
+              <p class="course-school">MIT OpenCourseWare</p>
+              <p>
+                Planned study of algorithms and data structures, developing
+                foundations for efficient computation.
+              </p>
+            </div>
+
+            <div class="course-card planned">
+              <div class="course-top">
+                <span class="tag copper">6.046J</span>
+                <span class="course-status">PLANNED</span>
+              </div>
+              <h3>Design and Analysis of Algorithms</h3>
+              <p class="course-school">MIT OpenCourseWare</p>
+              <p>
+                Planned study of advanced algorithm design and analysis.
+              </p>
+            </div>
+
+            <div class="course-card planned">
+              <div class="course-top">
+                <span class="tag copper">6.045J</span>
+                <span class="course-status">PLANNED</span>
+              </div>
+              <h3>Automata, Computability, and Complexity</h3>
+              <p class="course-school">MIT OpenCourseWare</p>
+              <p>
+                Planned study of theoretical computer science, computational models,
+                and the limits of computation.
+              </p>
+            </div>
+
+            <div class="course-card planned">
+              <div class="course-top">
+                <span class="tag copper">8.04</span>
+                <span class="course-status">PLANNED</span>
+              </div>
+              <h3>Quantum Physics I</h3>
+              <p class="course-school">MIT OpenCourseWare</p>
+              <p>
+                Planned study of quantum physics and the physical foundations of
+                quantum computing.
+              </p>
+            </div>
+
+            <div class="course-card planned">
+              <div class="course-top">
+                <span class="tag copper">8.05</span>
+                <span class="course-status">PLANNED</span>
+              </div>
+              <h3>Quantum Physics II</h3>
+              <p class="course-school">MIT OpenCourseWare</p>
+              <p>
+                Planned continuation of quantum physics, developing a deeper
+                understanding of quantum systems.
+              </p>
+            </div>
+
+            <div class="course-card planned">
+              <div class="course-top">
+                <span class="tag copper">18.435J</span>
+                <span class="course-status">PLANNED</span>
+              </div>
+              <h3>Quantum Computation</h3>
+              <p class="course-school">MIT OpenCourseWare</p>
+              <p>
+                Planned study of quantum computation, connecting quantum mechanics
+                with computational theory.
+              </p>
+            </div>
+
+            <div class="course-card planned">
+              <div class="course-top">
+                <span class="tag copper">6.840J / 18.404J</span>
+                <span class="course-status">PLANNED</span>
+              </div>
+              <h3>Theory of Computation</h3>
+              <p class="course-school">MIT OpenCourseWare</p>
+              <p>
+                Planned study of theoretical computer science and the mathematical
+                foundations of computation.
+              </p>
+            </div>
+
+            <div class="course-card planned">
+              <div class="course-top">
+                <span class="tag copper">6.845</span>
+                <span class="course-status">PLANNED</span>
+              </div>
+              <h3>Quantum Complexity Theory</h3>
+              <p class="course-school">MIT OpenCourseWare</p>
+              <p>
+                Planned study of quantum complexity theory, building toward advanced
+                work in quantum computing.
+              </p>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <span>© 2026 Sidhant Maloo — designed &amp; built from scratch.</span>
+        <div class="footer-links">
+          <a href="projects/index.html">Projects</a>
+          <a href="resume.html">Resume</a>
+          <a href="contact.html">Contact</a>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+  <script src="js/circuit-bg.js"></script>
+  <script src="js/main.js"></script>
+</body>
+
+</html>
