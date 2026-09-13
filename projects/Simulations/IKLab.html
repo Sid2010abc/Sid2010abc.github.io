@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Inverse Kinematics Lab — FABRIK vs CCD vs Jacobian Methods</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --void: #08060a;
+            --panel: #0d0b12;
+            --line: rgba(255, 200, 150, 0.09);
+            --text: #f3e9df;
+            --dim: #93897f;
+            --teal: #4fd1c5;
+            --teal-dim: rgba(79, 209, 197, 0.35);
+            --orange: #ff8a3d;
+            --violet: #8b6bff;
+            --amber: #ffc267;
+            --ok: #57e39a;
+            --danger: #ff5470;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--void);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+
+        .mono {
+            font-family: 'Space Mono', monospace;
+        }
+
+        #app {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* ---------------- sidebar ---------------- */
+        #sidebar {
+            width: 352px;
+            min-width: 352px;
+            height: 100%;
+            background: linear-gradient(180deg, #0f0c0e, #0a0808);
+            border-right: 1px solid var(--line);
+            overflow-y: auto;
+            padding: 16px 16px 50px 16px;
+            z-index: 6;
+        }
+
+        #sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #sidebar::-webkit-scrollbar-thumb {
+            background: #2a1f1a;
+            border-radius: 3px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+        }
+
+        .brand .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--teal);
+            box-shadow: 0 0 8px var(--teal);
+        }
+
+        .brand h1 {
+            font-size: 15px;
+            letter-spacing: 0.04em;
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .brand h1 span {
+            color: var(--teal);
+        }
+
+        .subtitle {
+            font-size: 11px;
+            color: var(--dim);
+            margin: 2px 0 14px 16px;
+            line-height: 1.5;
+        }
+
+        .section {
+            margin-bottom: 14px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.015);
+        }
+
+        .section-title {
+            font-size: 10.5px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--dim);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 14px;
+            height: 1px;
+            background: currentColor;
+            opacity: 0.5;
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 9px;
+        }
+
+        .row label {
+            font-size: 11.3px;
+            color: var(--dim);
+            flex: 0 0 auto;
+        }
+
+        .row .val {
+            font-size: 10.8px;
+            color: var(--text);
+            min-width: 50px;
+            text-align: right;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            flex: 1;
+            height: 3px;
+            background: #2a2019;
+            border-radius: 2px;
+            outline: none;
+            margin: 0 8px;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--teal);
+            cursor: pointer;
+            border: 2px solid #0b0a0e;
+            box-shadow: 0 0 6px var(--teal-dim);
+        }
+
+        select {
+            background: #15100c;
+            border: 1px solid var(--line);
+            color: var(--text);
+            font-size: 11.5px;
+            padding: 7px 8px;
+            border-radius: 6px;
+            width: 100%;
+        }
+
+        button {
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 12px;
+            letter-spacing: 0.02em;
+            border-radius: 7px;
+            border: 1px solid var(--line);
+            padding: 9px 10px;
+            cursor: pointer;
+            background: #161010;
+            color: var(--text);
+            transition: all .15s ease;
+        }
+
+        button:hover {
+            border-color: var(--teal-dim);
+            color: #fff;
+        }
+
+        button.primary {
+            background: linear-gradient(135deg, #4fd1c5, #8b6bff);
+            color: #07161a;
+            border: none;
+        }
+
+        button.primary:hover {
+            filter: brightness(1.12);
+        }
+
+        button:active {
+            transform: scale(0.97);
+        }
+
+        .btnrow {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .btnrow button {
+            flex: 1;
+        }
+
+        .btn-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 4px;
+        }
+
+        .btn-grid button {
+            font-size: 11px;
+            padding: 9px 4px;
+        }
+
+        .btn-grid button.active {
+            background: linear-gradient(135deg, #4fd1c5, #8b6bff);
+            color: #07161a;
+            border: none;
+            font-weight: 700;
+        }
+
+        .switch-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 9px;
+        }
+
+        .switch-row label {
+            font-size: 11.3px;
+            color: var(--dim);
+        }
+
+        .switch-row input[type=checkbox] {
+            accent-color: var(--teal);
+            width: 15px;
+            height: 15px;
+        }
+
+        .joint-block {
+            border-top: 1px solid var(--line);
+            padding-top: 8px;
+            margin-top: 8px;
+        }
+
+        .joint-block:first-child {
+            border-top: none;
+            padding-top: 0;
+            margin-top: 0;
+        }
+
+        .joint-name {
+            font-size: 10.5px;
+            font-weight: 700;
+            color: var(--amber);
+            margin-bottom: 6px;
+        }
+
+        .hint {
+            font-size: 10px;
+            color: var(--dim);
+            line-height: 1.55;
+            margin-top: 6px;
+        }
+
+        .legend-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10.5px;
+            color: var(--dim);
+            margin-bottom: 5px;
+        }
+
+        .legend-row .sw {
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+            flex: 0 0 auto;
+        }
+
+        /* ---------------- main ---------------- */
+        #main {
+            position: relative;
+            flex: 1;
+            height: 100%;
+            background: radial-gradient(ellipse at 50% 0%, #0d1310, #08060a 70%);
+        }
+
+        #ikCanvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            cursor: crosshair;
+        }
+
+        #topbar {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            right: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 5;
+            pointer-events: none;
+            flex-wrap: wrap;
+        }
+
+        #topbar .pill {
+            background: rgba(10, 8, 8, 0.78);
+            backdrop-filter: blur(6px);
+            border: 1px solid var(--line);
+            border-radius: 9px;
+            padding: 8px 12px;
+            font-family: 'Space Mono', monospace;
+            font-size: 11.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            pointer-events: auto;
+        }
+
+        #topbar .pill b {
+            color: #fff;
+            font-weight: 400;
+        }
+
+        #topbar .pill.err b {
+            color: var(--amber);
+        }
+
+        #topbar .pill.reach b {
+            color: var(--ok);
+        }
+
+        #topbar .pill.unreach b {
+            color: var(--danger);
+        }
+
+        #topbar .modeTag {
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--dim);
+            background: rgba(10, 8, 8, 0.78);
+            backdrop-filter: blur(6px);
+            border: 1px solid var(--line);
+            border-radius: 9px;
+            padding: 8px 12px;
+            pointer-events: auto;
+        }
+
+        #chartPanel {
+            position: absolute;
+            left: 14px;
+            bottom: 14px;
+            width: 330px;
+            background: rgba(10, 8, 8, 0.85);
+            backdrop-filter: blur(6px);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 12px 14px;
+            z-index: 5;
+            transition: opacity .2s ease;
+        }
+
+        #chartPanel .lab {
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.1em;
+            color: var(--dim);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        #chartPanel.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #chartCanvas {
+            display: block;
+            width: 100%;
+            height: 90px;
+        }
+
+        #readoutPanel {
+            position: absolute;
+            right: 14px;
+            bottom: 14px;
+            width: 230px;
+            background: rgba(10, 8, 8, 0.85);
+            backdrop-filter: blur(6px);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 12px 14px;
+            z-index: 5;
+        }
+
+        #readoutPanel .lab {
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.1em;
+            color: var(--dim);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        #readoutPanel .readout {
+            font-family: 'Space Mono', monospace;
+            font-size: 11.5px;
+            line-height: 1.85;
+        }
+
+        #readoutPanel .readout .k {
+            color: var(--dim);
+        }
+
+        #readoutPanel .readout b {
+            color: var(--amber);
+            font-weight: 400;
+        }
+
+        ::selection {
+            background: var(--teal-dim);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+
+        <!-- ============ SIDEBAR ============ -->
+        <div id="sidebar">
+            <div class="brand">
+                <div class="dot"></div>
+                <h1>IK <span>LAB</span></h1>
+            </div>
+            <div class="subtitle">Drag the target and watch four real robotics algorithms independently solve the same
+                reach problem — the same math a robot arm's controller runs.</div>
+
+            <div class="section">
+                <div class="section-title">Arm chain</div>
+                <div class="row"><label>Number of joints</label>
+                    <select id="jointCount">
+                        <option value="2">2</option>
+                        <option value="3" selected>3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                    </select>
+                </div>
+                <div id="lengthControls"></div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Active solver (bright arm)</div>
+                <div class="btn-grid" id="solverGrid">
+                    <button data-m="fabrik" class="active">FABRIK</button>
+                    <button data-m="ccd">CCD</button>
+                    <button data-m="jacobianT">Jacobian (T)</button>
+                    <button data-m="dls">Jacobian (DLS)</button>
+                </div>
+                <div class="hint" id="solverHint"></div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Solver tuning</div>
+                <div class="row"><label>Iterations / frame</label><input type="range" id="iters" min="1" max="12"
+                        step="1" value="2"><span class="val" id="itersV">2</span></div>
+                <div class="row"><label>Jacobian (T) rate</label><input type="range" id="alphaMul" min="0.2" max="5"
+                        step="0.1" value="1.0"><span class="val" id="alphaMulV">1.0×</span></div>
+                <div class="row"><label>DLS damping λ</label><input type="range" id="lambda" min="1" max="80" step="1"
+                        value="15"><span class="val" id="lambdaV">15</span></div>
+                <div class="hint">All methods run the same number of iterations per frame so you can compare algorithmic
+                    speed directly — note that real per-iteration cost still differs (FABRIK/CCD are O(n); the Jacobian
+                    methods add a small 2×2 solve).</div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Joint limits</div>
+                <div class="switch-row"><label>Enable realistic joint limits</label><input type="checkbox"
+                        id="limitsOn"></div>
+                <div id="limitControls"></div>
+                <div class="hint">FABRIK doesn't natively respect joint limits — here it's approximated by clamping
+                    angles after each solve, which can reduce how far it can reach.</div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Compare &amp; display</div>
+                <div class="switch-row"><label>Show all 4 methods (ghosts)</label><input type="checkbox" id="showGhosts"
+                        checked></div>
+                <div class="switch-row"><label>Show tracking-error chart</label><input type="checkbox" id="showChart"
+                        checked></div>
+                <div class="switch-row"><label>Trace end-effector path</label><input type="checkbox" id="showTrace">
+                </div>
+                <div class="btnrow"><button id="randomBtn">Random target</button><button id="resetBtn">Reset
+                        arm</button></div>
+            </div>
+        </div>
+
+        <!-- ============ MAIN ============ -->
+        <div id="main">
+            <canvas id="ikCanvas"></canvas>
+
+            <div id="topbar">
+                <div class="modeTag" id="modeTag">FABRIK</div>
+                <div class="pill err mono">tracking error <b id="pillErr">— px</b></div>
+                <div class="pill mono" id="pillReach">reachable</div>
+            </div>
+
+            <div id="chartPanel">
+                <div class="lab">Tracking error over time (lower is better)</div>
+                <canvas id="chartCanvas" width="600" height="90"></canvas>
+                <div class="legend-row">
+                    <div class="sw" style="background:#4fd1c5"></div>FABRIK
+                </div>
+                <div class="legend-row">
+                    <div class="sw" style="background:#ff8a3d"></div>CCD
+                </div>
+                <div class="legend-row">
+                    <div class="sw" style="background:#8b6bff"></div>Jacobian Transpose
+                </div>
+                <div class="legend-row">
+                    <div class="sw" style="background:#ff5470"></div>Jacobian DLS
+                </div>
+            </div>
+
+            <div id="readoutPanel">
+                <div class="lab">Numbers</div>
+                <div class="readout" id="readoutText"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* =========================================================================
+           GEOMETRY / IK MATH
+           ========================================================================= */
+        function dist(a, b) {return Math.hypot(a.x - b.x, a.y - b.y);}
+        function normAngle(a) {while (a > Math.PI) a -= 2 * Math.PI; while (a < -Math.PI) a += 2 * Math.PI; return a;}
+        function clamp(v, lo, hi) {return Math.max(lo, Math.min(hi, v));}
+
+        function forwardKinematics(base, lengths, relAngles) {
+            const n = lengths.length;
+            const positions = [{x: base.x, y: base.y}];
+            let absAngle = 0;
+            for (let i = 0; i < n; i++) {
+                absAngle += relAngles[i];
+                const prev = positions[i];
+                positions.push({x: prev.x + lengths[i] * Math.cos(absAngle), y: prev.y + lengths[i] * Math.sin(absAngle)});
+            }
+            return positions;
+        }
+        function anglesFromPositions(positions) {
+            const n = positions.length - 1;
+            const rel = new Array(n);
+            let prevAbs = 0;
+            for (let i = 0; i < n; i++) {
+                const ddx = positions[i + 1].x - positions[i].x, ddy = positions[i + 1].y - positions[i].y;
+                const abs = Math.atan2(ddy, ddx);
+                rel[i] = normAngle(abs - prevAbs);
+                prevAbs = abs;
+            }
+            return rel;
+        }
+        function applyLimits(relAngles, limits, on) {
+            if (!on) return relAngles;
+            return relAngles.map((a, i) => clamp(a, limits[i].min, limits[i].max));
+        }
+
+        function ccdStep(base, lengths, relAngles, target, limits, limitsOn) {
+            const n = lengths.length;
+            let positions = forwardKinematics(base, lengths, relAngles);
+            for (let i = n - 1; i >= 0; i--) {
+                const jointPos = positions[i];
+                const endPos = positions[n];
+                const toEnd = Math.atan2(endPos.y - jointPos.y, endPos.x - jointPos.x);
+                const toTarget = Math.atan2(target.y - jointPos.y, target.x - jointPos.x);
+                const delta = normAngle(toTarget - toEnd);
+                relAngles[i] = normAngle(relAngles[i] + delta);
+                if (limitsOn) relAngles[i] = clamp(relAngles[i], limits[i].min, limits[i].max);
+                positions = forwardKinematics(base, lengths, relAngles);
+            }
+            return relAngles;
+        }
+
+        function jacobianTStep(base, lengths, relAngles, target, alpha, limits, limitsOn) {
+            const n = lengths.length;
+            const positions = forwardKinematics(base, lengths, relAngles);
+            const end = positions[n];
+            const ex = target.x - end.x, ey = target.y - end.y;
+            const Jx = [], Jy = [];
+            for (let i = 0; i < n; i++) {const jp = positions[i]; Jx.push(-(end.y - jp.y)); Jy.push((end.x - jp.x));}
+            const dtheta = new Array(n);
+            for (let i = 0; i < n; i++) {dtheta[i] = alpha * (Jx[i] * ex + Jy[i] * ey);}
+            for (let i = 0; i < n; i++) {
+                relAngles[i] = normAngle(relAngles[i] + dtheta[i]);
+                if (limitsOn) relAngles[i] = clamp(relAngles[i], limits[i].min, limits[i].max);
+            }
+            return relAngles;
+        }
+
+        function dlsStep(base, lengths, relAngles, target, lambda, limits, limitsOn) {
+            const n = lengths.length;
+            const positions = forwardKinematics(base, lengths, relAngles);
+            const end = positions[n];
+            const ex = target.x - end.x, ey = target.y - end.y;
+            const Jx = [], Jy = [];
+            for (let i = 0; i < n; i++) {const jp = positions[i]; Jx.push(-(end.y - jp.y)); Jy.push(end.x - jp.x);}
+            let A00 = 0, A01 = 0, A11 = 0;
+            for (let i = 0; i < n; i++) {A00 += Jx[i] * Jx[i]; A01 += Jx[i] * Jy[i]; A11 += Jy[i] * Jy[i];}
+            A00 += lambda * lambda; A11 += lambda * lambda;
+            const det = A00 * A11 - A01 * A01 || 1e-9;
+            const inv00 = A11 / det, inv01 = -A01 / det, inv11 = A00 / det;
+            const t0 = inv00 * ex + inv01 * ey, t1 = inv01 * ex + inv11 * ey;
+            const dtheta = new Array(n);
+            for (let i = 0; i < n; i++) {dtheta[i] = (Jx[i] * t0 + Jy[i] * t1);}
+            for (let i = 0; i < n; i++) {
+                relAngles[i] = normAngle(relAngles[i] + dtheta[i]);
+                if (limitsOn) relAngles[i] = clamp(relAngles[i], limits[i].min, limits[i].max);
+            }
+            return relAngles;
+        }
+
+        function fabrikStep(base, lengths, relAngles, target, limits, limitsOn) {
+            const n = lengths.length;
+            let positions = forwardKinematics(base, lengths, relAngles);
+            const totalLen = lengths.reduce((a, b) => a + b, 0);
+            const d = dist(base, target);
+            if (d > totalLen) {
+                for (let i = 0; i < n; i++) {
+                    const r = dist(positions[i], target) || 1e-6;
+                    const lam = lengths[i] / r;
+                    positions[i + 1] = {x: (1 - lam) * positions[i].x + lam * target.x, y: (1 - lam) * positions[i].y + lam * target.y};
+                }
+            } else {
+                positions[n] = {x: target.x, y: target.y};
+                for (let i = n - 1; i >= 0; i--) {
+                    const r = dist(positions[i + 1], positions[i]) || 1e-6;
+                    const lam = lengths[i] / r;
+                    positions[i] = {x: (1 - lam) * positions[i + 1].x + lam * positions[i].x, y: (1 - lam) * positions[i + 1].y + lam * positions[i].y};
+                }
+                positions[0] = {x: base.x, y: base.y};
+                for (let i = 0; i < n; i++) {
+                    const r = dist(positions[i + 1], positions[i]) || 1e-6;
+                    const lam = lengths[i] / r;
+                    positions[i + 1] = {x: (1 - lam) * positions[i].x + lam * positions[i + 1].x, y: (1 - lam) * positions[i].y + lam * positions[i + 1].y};
+                }
+            }
+            let rel = anglesFromPositions(positions);
+            if (limitsOn) rel = applyLimits(rel, limits, true);
+            return rel;
+        }
+
+        /* =========================================================================
+           STATE
+           ========================================================================= */
+        const METHODS = ['fabrik', 'ccd', 'jacobianT', 'dls'];
+        const METHOD_COLOR = {fabrik: '#4fd1c5', ccd: '#ff8a3d', jacobianT: '#8b6bff', dls: '#ff5470'};
+        const METHOD_LABEL = {fabrik: 'FABRIK', ccd: 'CCD', jacobianT: 'Jacobian Transpose', dls: 'Jacobian (DLS)'};
+        const METHOD_HINT = {
+            fabrik: 'Geometric: pulls the end effector to the target, then re-anchors the base and works forward — like tightening a chain along straight lines. Fast, stable, very few iterations needed.',
+            ccd: 'Cyclic Coordinate Descent: rotates one joint at a time (tip to base) to point directly at the target, then repeats. Simple, cheap, but can wiggle before settling.',
+            jacobianT: 'Uses the Jacobian (how each joint angle nudges the end effector) and takes a small step along it — basic gradient descent. Simple but often needs many small steps.',
+            dls: "Damped Least Squares: solves for the joint update using a small 2×2 matrix inverse instead of just the gradient direction. This is what real robot controllers use — smoother and more stable near singularities."
+        };
+
+        let n = 3;
+        let lengths = [110, 90, 70];
+        let limits = []; // {min,max} in radians, per joint
+        let limitsOn = false;
+        let activeMethod = 'fabrik';
+        let itersPerFrame = 2;
+        let alphaMul = 1.0;
+        let lambdaVal = 15;
+        let showGhosts = true, showChart = true, showTrace = false;
+
+        let base = {x: 0, y: 0}; // set on resize
+        let target = {x: 0, y: 0};
+
+        let states = {}; // per method: {relAngles: [...]}
+        let errHistory = {}; // per method: ring buffer array
+        const HIST_LEN = 220;
+
+        function defaultLimitsFor(nn) {
+            const arr = [];
+            for (let i = 0; i < nn; i++) {
+                if (i === 0) arr.push({min: -2.0, max: 2.0});      // ~ -115..115 deg (shoulder-like)
+                else arr.push({min: 0, max: 2.62});             // 0..150 deg (elbow-like, no hyperextension)
+            }
+            return arr;
+        }
+
+        function resetAll() {
+            limits = defaultLimitsFor(n);
+            states = {};
+            errHistory = {};
+            METHODS.forEach(m => {states[m] = {relAngles: new Array(n).fill(0)}; errHistory[m] = new Array(HIST_LEN).fill(null);});
+            tracePts = [];
+        }
+
+        let tracePts = [];
+
+        /* =========================================================================
+           DOM WIRING
+           ========================================================================= */
+        const els = {};
+        ['jointCount', 'lengthControls', 'solverGrid', 'solverHint', 'iters', 'itersV', 'alphaMul', 'alphaMulV', 'lambda', 'lambdaV',
+            'limitsOn', 'limitControls', 'showGhosts', 'showChart', 'showTrace', 'randomBtn', 'resetBtn',
+            'modeTag', 'pillErr', 'pillReach', 'chartPanel', 'readoutText'
+        ].forEach(id => els[id] = document.getElementById(id));
+
+        function buildLengthControls() {
+            els.lengthControls.innerHTML = '';
+            for (let i = 0; i < n; i++) {
+                const block = document.createElement('div');
+                block.className = 'joint-block';
+                block.innerHTML = `<div class="joint-name">Link ${i + 1}</div>
+      <div class="row"><label>Length</label><input type="range" class="lenSlider" data-i="${i}" min="20" max="150" step="2" value="${lengths[i]}"><span class="val lenVal">${lengths[i]} px</span></div>`;
+                els.lengthControls.appendChild(block);
+            }
+            els.lengthControls.querySelectorAll('.lenSlider').forEach(sl => {
+                sl.addEventListener('input', e => {
+                    const i = parseInt(e.target.dataset.i, 10);
+                    lengths[i] = parseFloat(e.target.value);
+                    e.target.nextElementSibling.textContent = lengths[i] + ' px';
+                });
+            });
+        }
+
+        function buildLimitControls() {
+            els.limitControls.innerHTML = '';
+            if (!limitsOn) return;
+            for (let i = 0; i < n; i++) {
+                const minDeg = Math.round(limits[i].min * 180 / Math.PI);
+                const maxDeg = Math.round(limits[i].max * 180 / Math.PI);
+                const block = document.createElement('div');
+                block.className = 'joint-block';
+                block.innerHTML = `<div class="joint-name">Joint ${i + 1} limit</div>
+      <div class="row"><label>Min</label><input type="range" class="limMin" data-i="${i}" min="-180" max="180" step="5" value="${minDeg}"><span class="val limMinV">${minDeg}°</span></div>
+      <div class="row"><label>Max</label><input type="range" class="limMax" data-i="${i}" min="-180" max="180" step="5" value="${maxDeg}"><span class="val limMaxV">${maxDeg}°</span></div>`;
+                els.limitControls.appendChild(block);
+            }
+            els.limitControls.querySelectorAll('.limMin').forEach(sl => sl.addEventListener('input', e => {
+                const i = parseInt(e.target.dataset.i, 10); limits[i].min = parseFloat(e.target.value) * Math.PI / 180;
+                e.target.nextElementSibling.textContent = e.target.value + '°';
+            }));
+            els.limitControls.querySelectorAll('.limMax').forEach(sl => sl.addEventListener('input', e => {
+                const i = parseInt(e.target.dataset.i, 10); limits[i].max = parseFloat(e.target.value) * Math.PI / 180;
+                e.target.nextElementSibling.textContent = e.target.value + '°';
+            }));
+        }
+
+        els.jointCount.addEventListener('change', e => {
+            n = parseInt(e.target.value, 10);
+            const base3 = [110, 90, 70, 55, 45, 35];
+            lengths = base3.slice(0, n);
+            buildLengthControls();
+            resetAll();
+            buildLimitControls();
+        });
+        els.solverGrid.addEventListener('click', e => {
+            const b = e.target.closest('button[data-m]'); if (!b) return;
+            activeMethod = b.dataset.m;
+            [...els.solverGrid.children].forEach(x => x.classList.toggle('active', x.dataset.m === activeMethod));
+            els.solverHint.textContent = METHOD_HINT[activeMethod];
+            els.modeTag.textContent = METHOD_LABEL[activeMethod].toUpperCase();
+            tracePts = [];
+        });
+        els.iters.addEventListener('input', e => {itersPerFrame = parseInt(e.target.value, 10); els.itersV.textContent = itersPerFrame;});
+        els.alphaMul.addEventListener('input', e => {alphaMul = parseFloat(e.target.value); els.alphaMulV.textContent = alphaMul.toFixed(1) + '×';});
+        els.lambda.addEventListener('input', e => {lambdaVal = parseFloat(e.target.value); els.lambdaV.textContent = lambdaVal;});
+        els.limitsOn.addEventListener('change', e => {limitsOn = e.target.checked; buildLimitControls();});
+        els.showGhosts.addEventListener('change', e => showGhosts = e.target.checked);
+        els.showChart.addEventListener('change', e => {showChart = e.target.checked; els.chartPanel.classList.toggle('hidden', !showChart);});
+        els.showTrace.addEventListener('change', e => {showTrace = e.target.checked; tracePts = [];});
+        els.randomBtn.addEventListener('click', () => {
+            const totalLen = lengths.reduce((a, b) => a + b, 0);
+            const r = totalLen * (0.3 + Math.random() * 0.85);
+            const ang = Math.random() * Math.PI * 2;
+            target = {x: base.x + r * Math.cos(ang), y: base.y + r * Math.sin(ang)};
+        });
+        els.resetBtn.addEventListener('click', resetAll);
+
+        /* =========================================================================
+           CANVAS
+           ========================================================================= */
+        const canvas = document.getElementById('ikCanvas');
+        const ctx = canvas.getContext('2d');
+        let dpr = Math.min(window.devicePixelRatio || 1, 2);
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = Math.round(rect.width * dpr);
+            canvas.height = Math.round(rect.height * dpr);
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = rect.height + 'px';
+            base = {x: rect.width * 0.30, y: rect.height * 0.56};
+            if (target.x === 0 && target.y === 0) {target = {x: base.x + 140, y: base.y - 90};}
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        function drawGrid(w, h) {
+            ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 1;
+            const step = 40;
+            for (let x = 0; x < w; x += step) {ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();}
+            for (let y = 0; y < h; y += step) {ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();}
+        }
+
+        function drawArm(positions, color, opts) {
+            opts = opts || {};
+            const lw = opts.lineWidth || 5, alpha = opts.alpha === undefined ? 1 : opts.alpha, joints = opts.joints !== false;
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.lineCap = 'round';
+            ctx.shadowColor = color; ctx.shadowBlur = opts.glow ? 10 : 0;
+            ctx.beginPath();
+            positions.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+            if (joints) {
+                positions.forEach((p, i) => {
+                    ctx.fillStyle = i === positions.length - 1 ? '#ffe6a0' : (i === 0 ? '#f3e9df' : color);
+                    ctx.beginPath(); ctx.arc(p.x, p.y, i === positions.length - 1 ? 7 : 5.5, 0, Math.PI * 2); ctx.fill();
+                });
+            }
+            ctx.restore();
+        }
+
+        function drawLimitWedges(positions, relAngles) {
+            if (!limitsOn) return;
+            let absPrev = 0;
+            for (let i = 0; i < n; i++) {
+                const jp = positions[i];
+                const a0 = absPrev + limits[i].min, a1 = absPrev + limits[i].max;
+                ctx.save();
+                ctx.fillStyle = 'rgba(87,227,154,0.10)';
+                ctx.beginPath(); ctx.moveTo(jp.x, jp.y); ctx.arc(jp.x, jp.y, 30, a0, a1); ctx.closePath(); ctx.fill();
+                ctx.strokeStyle = 'rgba(87,227,154,0.3)'; ctx.lineWidth = 1; ctx.stroke();
+                ctx.restore();
+                absPrev += relAngles[i];
+            }
+        }
+
+        function drawTarget(reachable) {
+            ctx.save();
+            ctx.strokeStyle = reachable ? '#57e39a' : '#ff5470';
+            ctx.fillStyle = reachable ? 'rgba(87,227,154,0.15)' : 'rgba(255,84,112,0.15)';
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(target.x, target.y, 12, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(target.x - 18, target.y); ctx.lineTo(target.x + 18, target.y); ctx.moveTo(target.x, target.y - 18); ctx.lineTo(target.x, target.y + 18); ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawBaseMount() {
+            ctx.save();
+            ctx.fillStyle = '#1c1712'; ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.roundRect(base.x - 22, base.y - 14, 44, 28, 6); ctx.fill(); ctx.stroke();
+            ctx.restore();
+        }
+
+        /* =========================================================================
+           CHART
+           ========================================================================= */
+        const chartCanvas = document.getElementById('chartCanvas');
+        const chartCtx = chartCanvas.getContext('2d');
+        function drawChart() {
+            const w = chartCanvas.width, h = chartCanvas.height;
+            chartCtx.clearRect(0, 0, w, h);
+            let maxErr = 1;
+            METHODS.forEach(m => errHistory[m].forEach(v => {if (v !== null && v > maxErr) maxErr = v;}));
+            chartCtx.strokeStyle = 'rgba(255,255,255,0.08)'; chartCtx.lineWidth = 1;
+            chartCtx.beginPath(); chartCtx.moveTo(0, h - 1); chartCtx.lineTo(w, h - 1); chartCtx.stroke();
+            METHODS.forEach(m => {
+                chartCtx.strokeStyle = METHOD_COLOR[m];
+                chartCtx.lineWidth = m === activeMethod ? 2.4 : 1.4;
+                chartCtx.globalAlpha = m === activeMethod ? 1 : 0.55;
+                chartCtx.beginPath();
+                let started = false;
+                errHistory[m].forEach((v, i) => {
+                    if (v === null) return;
+                    const x = w * i / HIST_LEN;
+                    const y = h - Math.min(1, v / maxErr) * (h - 4) - 2;
+                    if (!started) {chartCtx.moveTo(x, y); started = true;} else chartCtx.lineTo(x, y);
+                });
+                chartCtx.stroke();
+            });
+            chartCtx.globalAlpha = 1;
+        }
+
+        /* =========================================================================
+           MAIN LOOP + INTERACTION
+           ========================================================================= */
+        function stepMethod(m) {
+            const st = states[m];
+            for (let k = 0; k < itersPerFrame; k++) {
+                if (m === 'fabrik') st.relAngles = fabrikStep(base, lengths, st.relAngles, target, limits, limitsOn);
+                else if (m === 'ccd') st.relAngles = ccdStep(base, lengths, st.relAngles, target, limits, limitsOn);
+                else if (m === 'jacobianT') {
+                    const Ltot = lengths.reduce((a, b) => a + b, 0);
+                    const alpha = alphaMul * 1.4 / (Ltot * Ltot);
+                    st.relAngles = jacobianTStep(base, lengths, st.relAngles, target, alpha, limits, limitsOn);
+                }
+                else if (m === 'dls') st.relAngles = dlsStep(base, lengths, st.relAngles, target, lambdaVal, limits, limitsOn);
+            }
+        }
+
+        function draw() {
+            const w = canvas.width / dpr, h = canvas.height / dpr;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save(); ctx.scale(dpr, dpr);
+            drawGrid(w, h);
+
+            METHODS.forEach(m => stepMethod(m));
+
+            const totalLen = lengths.reduce((a, b) => a + b, 0);
+            const reachable = dist(base, target) <= totalLen;
+
+            // ghosts
+            if (showGhosts) {
+                METHODS.forEach(m => {
+                    if (m === activeMethod) return;
+                    const positions = forwardKinematics(base, lengths, states[m].relAngles);
+                    drawArm(positions, METHOD_COLOR[m], {lineWidth: 3, alpha: 0.55, joints: true});
+                });
+            }
+            // active arm
+            const activePositions = forwardKinematics(base, lengths, states[activeMethod].relAngles);
+            drawLimitWedges(activePositions, states[activeMethod].relAngles);
+            drawArm(activePositions, METHOD_COLOR[activeMethod], {lineWidth: 6, alpha: 1, joints: true, glow: true});
+
+            if (showTrace) {
+                const end = activePositions[activePositions.length - 1];
+                tracePts.push({x: end.x, y: end.y});
+                if (tracePts.length > 150) tracePts.shift();
+                ctx.save();
+                ctx.strokeStyle = METHOD_COLOR[activeMethod]; ctx.lineWidth = 2;
+                tracePts.forEach((p, i) => {ctx.globalAlpha = i / tracePts.length * 0.6; if (i > 0) {ctx.beginPath(); ctx.moveTo(tracePts[i - 1].x, tracePts[i - 1].y); ctx.lineTo(p.x, p.y); ctx.stroke();} });
+                ctx.globalAlpha = 1;
+                ctx.restore();
+            }
+
+            drawBaseMount();
+            drawTarget(reachable);
+
+            // error history push (once per frame)
+            METHODS.forEach(m => {
+                const positions = forwardKinematics(base, lengths, states[m].relAngles);
+                const err = dist(positions[positions.length - 1], target);
+                errHistory[m].push(err); errHistory[m].shift();
+            });
+            if (showChart) drawChart();
+
+            ctx.restore();
+
+            const activeErr = dist(activePositions[activePositions.length - 1], target);
+            els.pillErr.innerHTML = `<b>${activeErr.toFixed(1)} px</b>`;
+            els.pillReach.innerHTML = reachable ? 'reachable' : '<b style="color:#ff5470">unreachable — arm fully extended</b>';
+            els.pillReach.style.color = reachable ? '#57e39a' : '#ff5470';
+
+            const jointAnglesDeg = states[activeMethod].relAngles.map(a => (a * 180 / Math.PI).toFixed(0) + '°').join(', ');
+            els.readoutText.innerHTML = `
+    <div><span class="k">method</span> <b>${METHOD_LABEL[activeMethod]}</b></div>
+    <div><span class="k">joint angles</span> <b>${jointAnglesDeg}</b></div>
+    <div><span class="k">end effector</span> <b>(${activePositions[activePositions.length - 1].x.toFixed(0)}, ${activePositions[activePositions.length - 1].y.toFixed(0)})</b></div>
+    <div><span class="k">target</span> <b>(${target.x.toFixed(0)}, ${target.y.toFixed(0)})</b></div>
+    <div><span class="k">arm reach</span> <b>${totalLen.toFixed(0)} px</b></div>
+  `;
+
+            requestAnimationFrame(draw);
+        }
+
+        let dragging = false;
+        function setTargetFromEvent(e) {
+            const rect = canvas.getBoundingClientRect();
+            target = {x: e.clientX - rect.left, y: e.clientY - rect.top};
+        }
+        canvas.addEventListener('mousedown', e => {dragging = true; setTargetFromEvent(e);});
+        window.addEventListener('mousemove', e => {if (dragging) setTargetFromEvent(e);});
+        window.addEventListener('mouseup', () => dragging = false);
+        canvas.addEventListener('touchstart', e => {dragging = true; setTargetFromEvent(e.touches[0]);}, {passive: true});
+        canvas.addEventListener('touchmove', e => {if (dragging) setTargetFromEvent(e.touches[0]);}, {passive: true});
+        window.addEventListener('touchend', () => dragging = false);
+
+        /* =========================================================================
+           INIT
+           ========================================================================= */
+        buildLengthControls();
+        resetAll();
+        els.solverHint.textContent = METHOD_HINT[activeMethod];
+        resizeCanvas();
+        requestAnimationFrame(draw);
+    </script>
+</body>
+
+</html>

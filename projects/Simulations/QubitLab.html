@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Qubit Lab — Superposition &amp; Entanglement Simulator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#08060a; --panel:#0d0b12; --line:rgba(255,200,150,0.09);
+    --text:#f3e9df; --dim:#93897f;
+    --orange:#ff8a3d; --orange-dim:rgba(255,138,61,0.35); --orange-deep:#ff5e1a;
+    --amber:#ffc267; --ok:#57e39a; --danger:#ff5470; --violet:#8b6bff;
+  }
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; width:100%; height:100%; background:var(--void); color:var(--text); font-family:'Inter',sans-serif; overflow:hidden; }
+  .mono{ font-family:'Space Mono',monospace; }
+  #app{ display:flex; width:100vw; height:100vh; }
+
+  /* ---------------- sidebar ---------------- */
+  #sidebar{ width:352px; min-width:352px; height:100%; background:linear-gradient(180deg,#0f0c0e,#0a0808);
+    border-right:1px solid var(--line); overflow-y:auto; padding:16px 16px 50px 16px; z-index:6; }
+  #sidebar::-webkit-scrollbar{ width:6px; } #sidebar::-webkit-scrollbar-thumb{ background:#2a1f1a; border-radius:3px; }
+
+  .brand{ display:flex; align-items:baseline; gap:8px; }
+  .brand .dot{ width:8px; height:8px; border-radius:50%; background:var(--violet); box-shadow:0 0 8px var(--violet); }
+  .brand h1{ font-size:15px; letter-spacing:0.04em; margin:0; font-weight:700; }
+  .brand h1 span{ color:var(--violet); }
+  .subtitle{ font-size:11px; color:var(--dim); margin:2px 0 14px 16px; line-height:1.5; }
+
+  .section{ margin-bottom:14px; border:1px solid var(--line); border-radius:10px; padding:12px 14px; background:rgba(255,255,255,0.015); }
+  .section-title{ font-size:10.5px; letter-spacing:0.12em; text-transform:uppercase; color:var(--dim);
+    display:flex; align-items:center; gap:8px; margin-bottom:10px; font-weight:700; }
+  .section-title::before{ content:''; width:14px; height:1px; background:currentColor; opacity:0.5; }
+
+  .row{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:9px; }
+  .row label{ font-size:11.3px; color:var(--dim); flex:0 0 auto; }
+  .row .val{ font-size:10.8px; color:var(--text); min-width:44px; text-align:right; }
+  input[type=range]{ -webkit-appearance:none; flex:1; height:3px; background:#2a2019; border-radius:2px; outline:none; margin:0 8px; }
+  input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; width:12px; height:12px; border-radius:50%;
+    background:var(--violet); cursor:pointer; border:2px solid #0b0a0e; box-shadow:0 0 6px rgba(139,107,255,0.45); }
+  select{ background:#15100c; border:1px solid var(--line); color:var(--text); font-size:11.5px; padding:7px 8px; border-radius:6px; width:100%; }
+
+  button{ font-family:'Inter',sans-serif; font-weight:600; font-size:12px; letter-spacing:0.02em; border-radius:7px;
+    border:1px solid var(--line); padding:9px 10px; cursor:pointer; background:#161010; color:var(--text); transition:all .15s ease; }
+  button:hover{ border-color:var(--orange-dim); color:#fff; }
+  button.primary{ background:linear-gradient(135deg,#8b6bff,#ff5470); color:#0d0a16; border:none; }
+  button.primary:hover{ filter:brightness(1.12); }
+  button:active{ transform:scale(0.97); }
+  .btnrow{ display:flex; gap:8px; margin-bottom:8px; } .btnrow button{ flex:1; }
+  .btn-grid{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-bottom:4px; }
+  .btn-grid button{ font-size:11px; padding:9px 4px; }
+  .btn-grid button.active{ background:linear-gradient(135deg,#8b6bff,#ff5470); color:#0d0a16; border:none; font-weight:700; }
+  .gate-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:5px; }
+  .gate-grid button{ font-size:11px; padding:7px 2px; font-family:'Space Mono',monospace; }
+
+  .qrow{ border-top:1px solid var(--line); padding-top:8px; margin-top:8px; }
+  .qrow:first-child{ border-top:none; padding-top:0; margin-top:0; }
+  .qrow .qlabel{ font-size:10.5px; font-weight:700; color:var(--amber); margin-bottom:6px; }
+
+  .hint{ font-size:10px; color:var(--dim); line-height:1.55; margin-top:6px; }
+  .twogate-row{ display:flex; gap:6px; align-items:center; margin-bottom:8px; }
+  .twogate-row select{ flex:1; }
+  .twogate-row span{ font-size:10px; color:var(--dim); }
+
+  .switch-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:9px; }
+  .switch-row label{ font-size:11.3px; color:var(--dim); }
+  .switch-row input[type=checkbox]{ accent-color:var(--violet); width:15px; height:15px; }
+
+  /* ---------------- main ---------------- */
+  #main{ position:relative; flex:1; height:100%; background:radial-gradient(ellipse at 50% 0%, #100c14, #08060a 70%); }
+  #qCanvas{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+
+  #topbar{ position:absolute; top:14px; left:14px; right:14px; display:flex; align-items:center; gap:10px; z-index:5; pointer-events:none; flex-wrap:wrap; }
+  #topbar .pill{ background:rgba(10,8,8,0.78); backdrop-filter:blur(6px); border:1px solid var(--line); border-radius:9px;
+    padding:8px 12px; font-family:'Space Mono',monospace; font-size:11.5px; display:flex; align-items:center; gap:8px; pointer-events:auto; }
+  #topbar .pill b{ color:#fff; font-weight:400; }
+  #topbar .modeTag{ font-family:'Space Mono',monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase;
+    color:var(--dim); background:rgba(10,8,8,0.78); backdrop-filter:blur(6px); border:1px solid var(--line); border-radius:9px; padding:8px 12px; pointer-events:auto; }
+  #topbar .pill.meas b{ color:var(--amber); }
+
+  #statePanel{ position:absolute; left:14px; bottom:14px; width:360px; max-height:150px; overflow-y:auto;
+    background:rgba(10,8,8,0.85); backdrop-filter:blur(6px); border:1px solid var(--line); border-radius:12px; padding:13px 15px; z-index:5; transition:opacity .2s ease, transform .2s ease; }
+  #statePanel::-webkit-scrollbar{ width:5px; } #statePanel::-webkit-scrollbar-thumb{ background:#2a1f1a; border-radius:3px; }
+  #statePanel .lab{ font-family:'Space Mono',monospace; font-size:10px; letter-spacing:0.1em; color:var(--dim); text-transform:uppercase; margin-bottom:8px; }
+  #statePanel .ket{ font-family:'Space Mono',monospace; font-size:12px; color:var(--text); line-height:1.7; word-break:break-word; }
+  #statePanel .ket b{ color:var(--amber); font-weight:400; }
+  #statePanel.hidden{ opacity:0; pointer-events:none; transform:translateY(6px); }
+
+  #legendPanel{ position:absolute; right:14px; bottom:14px; width:190px; background:rgba(10,8,8,0.85); backdrop-filter:blur(6px);
+    border:1px solid var(--line); border-radius:12px; padding:12px 14px; z-index:5; font-size:10px; color:var(--dim); line-height:1.6; transition:opacity .2s ease; }
+  #legendPanel .lab{ font-family:'Space Mono',monospace; font-size:10px; letter-spacing:0.1em; color:var(--dim); text-transform:uppercase; margin-bottom:8px; }
+  #legendPanel.hidden{ opacity:0; pointer-events:none; }
+  #wheelCanvas{ display:block; margin:0 auto 6px auto; }
+
+  ::selection{ background:rgba(139,107,255,0.35); }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ SIDEBAR ============ -->
+  <div id="sidebar">
+    <div class="brand"><div class="dot"></div><h1>QUB<span>IT</span> LAB</h1></div>
+    <div class="subtitle">Build up from one qubit to three: watch superposition, phase, and entanglement emerge directly from the math.</div>
+
+    <div class="section">
+      <div class="section-title">Number of qubits</div>
+      <div class="btn-grid" id="nGrid">
+        <button data-n="1" class="active">1 Qubit</button>
+        <button data-n="2">2 Qubits</button>
+        <button data-n="3">3 Qubits</button>
+      </div>
+      <div class="hint" id="nHint"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Presets</div>
+      <div class="btnrow"><button id="resetBtn">Reset to |0…0⟩</button></div>
+      <div class="btnrow"><button id="superposBtn">Equal superposition (H on all)</button></div>
+      <div class="btnrow" id="entangleRow" style="display:none;"><button class="primary" id="entangleBtn">Create Bell pair</button></div>
+    </div>
+
+    <div class="section" id="rotSection">
+      <div class="section-title">Rotate the qubit (Bloch sphere)</div>
+      <div class="row"><label>Around X</label><input type="range" id="rotX" min="-180" max="180" step="1" value="0"><span class="val" id="rotXV">0°</span></div>
+      <div class="row"><label>Around Y</label><input type="range" id="rotY" min="-180" max="180" step="1" value="0"><span class="val" id="rotYV">0°</span></div>
+      <div class="row"><label>Around Z</label><input type="range" id="rotZ" min="-180" max="180" step="1" value="0"><span class="val" id="rotZV">0°</span></div>
+      <div class="hint">Drag a slider — the arrow spins live around that axis. Sliders track relative motion, so you can freely spin back and forth.</div>
+    </div>
+
+    <div class="section" id="gateSection">
+      <div class="section-title">Single-qubit gates</div>
+      <div id="gateRows"></div>
+      <div class="hint">H creates superposition · X flips |0⟩↔|1⟩ · Z flips the phase of |1⟩ · S adds a quarter-turn of phase (doesn't change probabilities, only shows up as color).</div>
+    </div>
+
+    <div class="section" id="cnotSection" style="display:none;">
+      <div class="section-title">Two-qubit gate — CNOT</div>
+      <div class="twogate-row"><span>control</span><select id="cnotControl"></select><span>target</span><select id="cnotTarget"></select></div>
+      <div class="btnrow"><button class="primary" id="cnotBtn">Apply CNOT</button></div>
+      <div class="hint">Flips the target qubit only when the control qubit is |1⟩. This is what links two qubits into an entangled state.</div>
+    </div>
+
+    <div class="section" id="toffSection" style="display:none;">
+      <div class="section-title">Three-qubit gate — Toffoli</div>
+      <div class="twogate-row"><span>c1</span><select id="toffC1"></select><span>c2</span><select id="toffC2"></select><span>tgt</span><select id="toffT"></select></div>
+      <div class="btnrow"><button class="primary" id="toffBtn">Apply Toffoli</button></div>
+      <div class="hint">Flips the target only when BOTH controls are |1⟩ — a quantum AND gate.</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Measurement</div>
+      <div class="btnrow"><button class="primary" id="measureBtn">Measure all qubits</button></div>
+      <div class="hint" id="measureHint">Collapses the state to one random outcome, with probability given by the bar heights on the right.</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Display</div>
+      <div class="switch-row"><label>Color bars by phase</label><input type="checkbox" id="showPhase" checked></div>
+      <div class="switch-row"><label>Show entanglement readout</label><input type="checkbox" id="showEntangle" checked></div>
+      <div class="switch-row"><label>Show state vector (ket)</label><input type="checkbox" id="showKet" checked></div>
+    </div>
+  </div>
+
+  <!-- ============ MAIN ============ -->
+  <div id="main">
+    <canvas id="qCanvas"></canvas>
+
+    <div id="topbar">
+      <div class="modeTag" id="modeTag">1 QUBIT</div>
+      <div class="pill meas mono">Last measurement <b id="pillMeas">—</b></div>
+    </div>
+
+    <div id="statePanel">
+      <div class="lab">State vector |ψ⟩</div>
+      <div class="ket" id="ketText">|0⟩</div>
+    </div>
+
+    <div id="legendPanel">
+      <div class="lab">Phase color key</div>
+      <canvas id="wheelCanvas" width="100" height="100"></canvas>
+      <div>Hue = complex phase angle of the amplitude. Bar height = probability. Grey = zero amplitude.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================================
+   COMPLEX NUMBER HELPERS
+   ========================================================================= */
+const c = (re,im=0)=>({re,im});
+const cAdd=(a,b)=>({re:a.re+b.re, im:a.im+b.im});
+const cMul=(a,b)=>({re:a.re*b.re-a.im*b.im, im:a.re*b.im+a.im*b.re});
+const cConj=(a)=>({re:a.re, im:-a.im});
+const cAbs2=(a)=>a.re*a.re+a.im*a.im;
+const cScale=(a,s)=>({re:a.re*s, im:a.im*s});
+
+/* =========================================================================
+   GATE MATRICES  (2x2 complex, row-major: M[row][col])
+   ========================================================================= */
+const SQ2 = 1/Math.sqrt(2);
+function gateH(){ return [[c(SQ2),c(SQ2)],[c(SQ2),c(-SQ2)]]; }
+function gateX(){ return [[c(0),c(1)],[c(1),c(0)]]; }
+function gateY(){ return [[c(0,0),c(0,-1)],[c(0,1),c(0,0)]]; }
+function gateZ(){ return [[c(1),c(0)],[c(0),c(-1)]]; }
+function gateS(){ return [[c(1),c(0)],[c(0),c(0,1)]]; }
+function gateRx(theta){ const h=theta/2; return [[c(Math.cos(h)),c(0,-Math.sin(h))],[c(0,-Math.sin(h)),c(Math.cos(h))]]; }
+function gateRy(theta){ const h=theta/2; return [[c(Math.cos(h)),c(-Math.sin(h))],[c(Math.sin(h)),c(Math.cos(h))]]; }
+function gateRz(theta){ const h=theta/2; return [[c(Math.cos(-h),Math.sin(-h)),c(0)],[c(0),c(Math.cos(h),Math.sin(h))]]; }
+
+/* =========================================================================
+   STATE / REGISTER ENGINE
+   ========================================================================= */
+let n = 1;
+let state = [c(1),c(0)]; // 2^n complex amplitudes, index bits = qubit0..qubitN-1 (MSB..LSB)
+
+function resetState(nn){
+  const N = 1<<nn;
+  state = new Array(N).fill(0).map(()=>c(0));
+  state[0] = c(1);
+}
+
+function bitOf(i,n,q){ return (i >> (n-1-q)) & 1; }
+
+function applyGate1(target, M){
+  const N = state.length;
+  const newState = state.slice();
+  for(let i=0;i<N;i++){
+    if(bitOf(i,n,target)===0){
+      const j = i | (1 << (n-1-target));
+      const a0 = state[i], a1 = state[j];
+      newState[i] = cAdd(cMul(M[0][0],a0), cMul(M[0][1],a1));
+      newState[j] = cAdd(cMul(M[1][0],a0), cMul(M[1][1],a1));
+    }
+  }
+  state = newState;
+}
+
+function applyCNOT(control, target){
+  const N = state.length;
+  const newState = new Array(N);
+  for(let i=0;i<N;i++){
+    const j = bitOf(i,n,control)===1 ? (i ^ (1<<(n-1-target))) : i;
+    newState[i] = state[j];
+  }
+  state = newState;
+}
+
+function applyToffoli(c1, c2, target){
+  const N = state.length;
+  const newState = new Array(N);
+  for(let i=0;i<N;i++){
+    const j = (bitOf(i,n,c1)===1 && bitOf(i,n,c2)===1) ? (i ^ (1<<(n-1-target))) : i;
+    newState[i] = state[j];
+  }
+  state = newState;
+}
+
+function otherQubits(nn,q){ const a=[]; for(let k=0;k<nn;k++) if(k!==q) a.push(k); return a; }
+
+function reducedRho(q){
+  const others = otherQubits(n,q);
+  const m = others.length;
+  let rho = [[c(0),c(0)],[c(0),c(0)]];
+  const total = 1<<m;
+  const bits = new Array(n).fill(0);
+  for(let t=0;t<total;t++){
+    for(let k=0;k<m;k++) bits[others[k]] = (t>>(m-1-k))&1;
+    for(let a1=0;a1<2;a1++){
+      bits[q]=a1;
+      const ia = bits.reduce((acc,b)=>(acc<<1)|b,0);
+      for(let b1=0;b1<2;b1++){
+        bits[q]=b1;
+        const ib = bits.reduce((acc,b)=>(acc<<1)|b,0);
+        rho[a1][b1] = cAdd(rho[a1][b1], cMul(state[ia], cConj(state[ib])));
+      }
+    }
+  }
+  return rho;
+}
+
+function blochFromRho(rho){
+  const rz = 2*rho[0][0].re - 1;
+  const rx = 2*rho[0][1].re;
+  const ry = -2*rho[0][1].im;
+  const purity = rho[0][0].re*rho[0][0].re + rho[1][1].re*rho[1][1].re + 2*cAbs2(rho[0][1]);
+  return { rx, ry, rz, purity, len: Math.sqrt(rx*rx+ry*ry+rz*rz) };
+}
+
+/* =========================================================================
+   UI STATE + WIRING
+   ========================================================================= */
+let showPhase=true, showEntangle=true, showKet=true;
+let lastMeasurement = null;
+
+const els = {};
+['nGrid','nHint','resetBtn','superposBtn','entangleRow','entangleBtn','rotSection','rotX','rotY','rotZ','rotXV','rotYV','rotZV',
+ 'gateSection','gateRows','cnotSection','cnotControl','cnotTarget','cnotBtn','toffSection','toffC1','toffC2','toffT','toffBtn',
+ 'measureBtn','measureHint','showPhase','showEntangle','showKet','modeTag','pillMeas','statePanel','ketText','legendPanel'
+].forEach(id=> els[id]=document.getElementById(id));
+
+const N_HINTS = {
+  1: 'One qubit lives on the Bloch sphere: any point on the sphere is a valid state. The poles are |0⟩ and |1⟩ — everywhere else is superposition.',
+  2: 'Two qubits have 4 basis states (|00⟩…|11⟩). Apply H then CNOT to link them — that\'s a Bell pair, the simplest entangled state.',
+  3: 'Three qubits have 8 basis states. Try the GHZ preset: all three qubits become locked together even though none has a definite value alone.'
+};
+
+function setN(nn){
+  n = nn;
+  resetState(n);
+  lastMeasurement = null;
+  [...els.nGrid.children].forEach(b=> b.classList.toggle('active', parseInt(b.dataset.n,10)===n));
+  els.nHint.textContent = N_HINTS[n];
+  els.modeTag.textContent = n===1 ? '1 QUBIT' : n+' QUBITS';
+  els.rotSection.style.display = n===1 ? '' : 'none';
+  els.entangleRow.style.display = n>=2 ? '' : 'none';
+  els.entangleBtn.textContent = n===2 ? 'Create Bell pair' : 'Create GHZ state';
+  els.cnotSection.style.display = n>=2 ? '' : 'none';
+  els.toffSection.style.display = n===3 ? '' : 'none';
+  els.rotX.value=0; els.rotY.value=0; els.rotZ.value=0;
+  els.rotXV.textContent='0°'; els.rotYV.textContent='0°'; els.rotZV.textContent='0°';
+  buildGateRows();
+  buildQubitSelects();
+  els.pillMeas.textContent = '—';
+}
+
+function buildGateRows(){
+  els.gateRows.innerHTML='';
+  for(let q=0;q<n;q++){
+    const row = document.createElement('div');
+    row.className='qrow';
+    row.innerHTML = `<div class="qlabel">q${q}</div>
+      <div class="gate-grid">
+        <button data-q="${q}" data-g="H">H</button>
+        <button data-q="${q}" data-g="X">X</button>
+        <button data-q="${q}" data-g="Z">Z</button>
+        <button data-q="${q}" data-g="S">S</button>
+      </div>`;
+    els.gateRows.appendChild(row);
+  }
+  els.gateRows.querySelectorAll('button[data-g]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const q = parseInt(btn.dataset.q,10);
+      const g = btn.dataset.g;
+      const M = g==='H'?gateH(): g==='X'?gateX(): g==='Z'?gateZ(): gateS();
+      applyGate1(q, M);
+    });
+  });
+}
+
+function fillSelect(sel, exclude){
+  sel.innerHTML='';
+  for(let q=0;q<n;q++){
+    const opt=document.createElement('option'); opt.value=q; opt.textContent='q'+q;
+    sel.appendChild(opt);
+  }
+}
+function buildQubitSelects(){
+  [els.cnotControl, els.cnotTarget].forEach(s=>fillSelect(s));
+  if(n>=2){ els.cnotControl.value=0; els.cnotTarget.value=1; }
+  if(n===3){
+    [els.toffC1, els.toffC2, els.toffT].forEach(s=>fillSelect(s));
+    els.toffC1.value=0; els.toffC2.value=1; els.toffT.value=2;
+  }
+}
+
+els.nGrid.addEventListener('click', e=>{ const b=e.target.closest('button[data-n]'); if(b) setN(parseInt(b.dataset.n,10)); });
+els.resetBtn.addEventListener('click', ()=>{ resetState(n); lastMeasurement=null; els.pillMeas.textContent='—'; });
+els.superposBtn.addEventListener('click', ()=>{ resetState(n); for(let q=0;q<n;q++) applyGate1(q, gateH()); });
+els.entangleBtn.addEventListener('click', ()=>{
+  resetState(n);
+  if(n===2){ applyGate1(0,gateH()); applyCNOT(0,1); }
+  else if(n===3){ applyGate1(0,gateH()); applyCNOT(0,1); applyCNOT(0,2); }
+});
+
+let lastAngles = {x:0,y:0,z:0};
+els.rotX.addEventListener('input', e=>{
+  const v=parseFloat(e.target.value); const delta=(v-lastAngles.x)*Math.PI/180; lastAngles.x=v;
+  els.rotXV.textContent=v.toFixed(0)+'°'; applyGate1(0, gateRx(delta));
+});
+els.rotY.addEventListener('input', e=>{
+  const v=parseFloat(e.target.value); const delta=(v-lastAngles.y)*Math.PI/180; lastAngles.y=v;
+  els.rotYV.textContent=v.toFixed(0)+'°'; applyGate1(0, gateRy(delta));
+});
+els.rotZ.addEventListener('input', e=>{
+  const v=parseFloat(e.target.value); const delta=(v-lastAngles.z)*Math.PI/180; lastAngles.z=v;
+  els.rotZV.textContent=v.toFixed(0)+'°'; applyGate1(0, gateRz(delta));
+});
+
+els.cnotBtn.addEventListener('click', ()=>{
+  const ctl=parseInt(els.cnotControl.value,10), tgt=parseInt(els.cnotTarget.value,10);
+  if(ctl!==tgt) applyCNOT(ctl,tgt);
+});
+els.toffBtn.addEventListener('click', ()=>{
+  const c1=parseInt(els.toffC1.value,10), c2=parseInt(els.toffC2.value,10), t=parseInt(els.toffT.value,10);
+  if(c1!==c2 && c1!==t && c2!==t) applyToffoli(c1,c2,t);
+});
+
+els.measureBtn.addEventListener('click', ()=>{
+  const probs = state.map(a=>cAbs2(a));
+  const total = probs.reduce((s,p)=>s+p,0) || 1;
+  let r = Math.random()*total, idx=0;
+  for(let i=0;i<probs.length;i++){ r-=probs[i]; if(r<=0){ idx=i; break; } idx=i; }
+  const N = state.length;
+  const newState = new Array(N).fill(0).map(()=>c(0));
+  newState[idx] = c(1);
+  state = newState;
+  lastMeasurement = idx.toString(2).padStart(n,'0');
+  els.pillMeas.textContent = '|'+lastMeasurement+'⟩';
+  lastAngles = {x:0,y:0,z:0};
+  els.rotX.value=0; els.rotY.value=0; els.rotZ.value=0;
+  els.rotXV.textContent='0°'; els.rotYV.textContent='0°'; els.rotZV.textContent='0°';
+});
+
+els.showPhase.addEventListener('change', e=> showPhase=e.target.checked);
+els.showEntangle.addEventListener('change', e=> showEntangle=e.target.checked);
+els.showKet.addEventListener('change', e=>{ showKet=e.target.checked; els.statePanel.classList.toggle('hidden', !showKet); });
+
+/* =========================================================================
+   KET TEXT
+   ========================================================================= */
+function formatAmp(a){
+  const re=Math.round(a.re*1000)/1000, im=Math.round(a.im*1000)/1000;
+  if(Math.abs(im)<0.001) return re.toFixed(2);
+  if(Math.abs(re)<0.001) return (im>=0?'':'−')+Math.abs(im).toFixed(2)+'i';
+  return re.toFixed(2)+(im>=0?'+':'−')+Math.abs(im).toFixed(2)+'i';
+}
+function updateKet(){
+  const parts=[];
+  for(let i=0;i<state.length;i++){
+    const a=state[i];
+    if(cAbs2(a) > 1e-4){
+      const label = i.toString(2).padStart(n,'0');
+      parts.push(`<b>${formatAmp(a)}</b>|${label}⟩`);
+    }
+  }
+  els.ketText.innerHTML = parts.length ? parts.join(' + ') : '0';
+}
+
+/* =========================================================================
+   CANVAS RENDERING
+   ========================================================================= */
+const canvas = document.getElementById('qCanvas');
+const ctx = canvas.getContext('2d');
+let dpr = Math.min(window.devicePixelRatio||1, 2);
+function resizeCanvas(){
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = Math.round(rect.width*dpr);
+  canvas.height = Math.round(rect.height*dpr);
+  canvas.style.width = rect.width+'px';
+  canvas.style.height = rect.height+'px';
+}
+window.addEventListener('resize', resizeCanvas);
+
+function proj(rx,ry,rz,R,cx,cy){
+  const isoX = rx - ry*0.5;
+  const isoY = -rz + ry*0.28;
+  return { x: cx+R*isoX*0.95, y: cy+R*isoY*0.95 };
+}
+
+function drawBlochSphere(cx,cy,R,vec,label,purityNote){
+  ctx.save();
+  // outer circle
+  ctx.strokeStyle='rgba(255,255,255,0.18)'; ctx.lineWidth=1.3;
+  ctx.beginPath(); ctx.arc(cx,cy,R,0,Math.PI*2); ctx.stroke();
+  // equator (xy-plane, flattened ellipse)
+  ctx.strokeStyle='rgba(255,255,255,0.12)';
+  ctx.beginPath(); ctx.ellipse(cx,cy,R,R*0.32,0,0,Math.PI*2); ctx.stroke();
+  // meridian (xz-plane tilted)
+  ctx.beginPath(); ctx.ellipse(cx,cy,R*0.42,R,0,0,Math.PI*2); ctx.stroke();
+  // polar axis
+  ctx.strokeStyle='rgba(255,255,255,0.25)';
+  ctx.beginPath(); ctx.moveTo(cx,cy-R); ctx.lineTo(cx,cy+R); ctx.stroke();
+  ctx.font='600 10px Space Mono, monospace'; ctx.fillStyle='var(--dim)'.startsWith('v')?'#93897f':'#93897f';
+  ctx.textAlign='center';
+  ctx.fillText('|0⟩', cx, cy-R-8);
+  ctx.fillText('|1⟩', cx, cy+R+16);
+
+  // vector
+  const tip = proj(vec.rx,vec.ry,vec.rz,R,cx,cy);
+  const grad = ctx.createLinearGradient(cx,cy,tip.x,tip.y);
+  grad.addColorStop(0,'#8b6bff'); grad.addColorStop(1,'#ff8a3d');
+  ctx.strokeStyle=grad; ctx.lineWidth=3;
+  ctx.shadowColor='rgba(139,107,255,0.5)'; ctx.shadowBlur=8;
+  ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(tip.x,tip.y); ctx.stroke();
+  ctx.shadowBlur=0;
+  ctx.fillStyle='#ffe6a0';
+  ctx.beginPath(); ctx.arc(tip.x,tip.y,5,0,Math.PI*2); ctx.fill();
+
+  ctx.font='700 12px Space Mono, monospace'; ctx.fillStyle='#ffc267';
+  ctx.fillText(label, cx, cy+R+34);
+  if(purityNote){
+    ctx.font='600 10px Space Mono, monospace'; ctx.fillStyle= vec.len>0.98 ? '#57e39a' : '#ff8a3d';
+    ctx.fillText(purityNote, cx, cy+R+50);
+  }
+  ctx.restore();
+}
+
+function hueColor(re,im,alpha){
+  const angle = Math.atan2(im,re);
+  const hue = ((angle/(2*Math.PI))+1)%1*360;
+  return `hsla(${hue.toFixed(0)},72%,58%,${alpha})`;
+}
+
+function drawHistogram(x0,y0,w,h){
+  const N = state.length;
+  const gap = 10;
+  const barW = (w-gap*(N-1))/N;
+  const probs = state.map(a=>cAbs2(a));
+  ctx.textAlign='center';
+  for(let i=0;i<N;i++){
+    const bx = x0 + i*(barW+gap);
+    const bh = Math.max(2, probs[i]*h);
+    const by = y0+h-bh;
+    const col = showPhase ? hueColor(state[i].re, state[i].im, probs[i]>0.003?0.9:0.25) : `rgba(139,107,255,${probs[i]>0.003?0.85:0.2})`;
+    ctx.fillStyle = col;
+    ctx.shadowColor = col; ctx.shadowBlur = probs[i]>0.02 ? 10 : 0;
+    ctx.beginPath();
+    const r=6;
+    ctx.moveTo(bx,by+r);
+    ctx.arcTo(bx,by,bx+r,by,r);
+    ctx.lineTo(bx+barW-r,by);
+    ctx.arcTo(bx+barW,by,bx+barW,by+r,r);
+    ctx.lineTo(bx+barW,y0+h);
+    ctx.lineTo(bx,y0+h);
+    ctx.closePath();
+    ctx.fill();
+    ctx.shadowBlur=0;
+
+    ctx.font='600 10.5px Space Mono, monospace'; ctx.fillStyle='#f3e9df';
+    ctx.fillText((probs[i]*100).toFixed(1)+'%', bx+barW/2, by-8);
+
+    ctx.font='700 11px Space Mono, monospace'; ctx.fillStyle='#93897f';
+    ctx.fillText('|'+i.toString(2).padStart(n,'0')+'⟩', bx+barW/2, y0+h+18);
+  }
+  // baseline
+  ctx.strokeStyle='rgba(255,255,255,0.15)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(x0,y0+h); ctx.lineTo(x0+w,y0+h); ctx.stroke();
+}
+
+function drawWheel(){
+  const wc = document.getElementById('wheelCanvas');
+  const wctx = wc.getContext('2d');
+  const size=100, cx=50, cy=50, R=42;
+  wctx.clearRect(0,0,size,size);
+  for(let a=0;a<360;a++){
+    wctx.strokeStyle = `hsl(${a},72%,58%)`;
+    wctx.beginPath();
+    wctx.moveTo(cx,cy);
+    const rad1=a*Math.PI/180, rad2=(a+1.2)*Math.PI/180;
+    wctx.arc(cx,cy,R,rad1,rad2);
+    wctx.closePath();
+    wctx.fill();
+  }
+  wctx.fillStyle='#08060a'; wctx.beginPath(); wctx.arc(cx,cy,14,0,Math.PI*2); wctx.fill();
+  wctx.font='700 8px Space Mono, monospace'; wctx.fillStyle='#f3e9df'; wctx.textAlign='center';
+  wctx.fillText('0°',cx+R+8,cy+3);
+  wctx.fillText('90°',cx,cy-R-6);
+  wctx.fillText('180°',cx-R-10,cy+3);
+  wctx.fillText('270°',cx,cy+R+12);
+}
+drawWheel();
+
+function draw(){
+  const w = canvas.width/dpr, h = canvas.height/dpr;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.save();
+  ctx.scale(dpr,dpr);
+
+  const sphereAreaH = n===1 ? h*0.62 : h*0.40;
+  const R = n===1 ? Math.min(sphereAreaH*0.42, w*0.16) : Math.min(sphereAreaH*0.34, (w/n)*0.30);
+  const cy = sphereAreaH*0.52;
+
+  for(let q=0;q<n;q++){
+    const cx = (w/(n+1))*(q+1);
+    const rho = reducedRho(q);
+    const vec = blochFromRho(rho);
+    const label = 'q'+q;
+    let note = null;
+    if(showEntangle && n>1){
+      note = vec.len>0.98 ? 'separable (len 1.00)' : 'entangled (len '+vec.len.toFixed(2)+')';
+    }
+    drawBlochSphere(cx,cy,R,vec,label,note);
+  }
+
+  const histY0 = sphereAreaH + 40;
+  const histH = h - histY0 - 30;
+  drawHistogram(60, histY0, w-120, histH);
+
+  ctx.restore();
+
+  updateKet();
+  requestAnimationFrame(draw);
+}
+
+/* =========================================================================
+   INIT
+   ========================================================================= */
+setN(1);
+resizeCanvas();
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>

@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Circuit Lab — Series &amp; Parallel Circuit Simulator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#08060a; --panel:#0d0b12; --line:rgba(255,200,150,0.09);
+    --text:#f3e9df; --dim:#93897f;
+    --orange:#ff8a3d; --orange-dim:rgba(255,138,61,0.35); --orange-deep:#ff5e1a;
+    --amber:#ffc267; --ok:#57e39a; --danger:#ff5470; --violet:#8b6bff;
+  }
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; width:100%; height:100%; background:var(--void); color:var(--text); font-family:'Inter',sans-serif; overflow:hidden; }
+  .mono{ font-family:'Space Mono',monospace; }
+  #app{ display:flex; width:100vw; height:100vh; }
+
+  /* ---------------- sidebar ---------------- */
+  #sidebar{ width:340px; min-width:340px; height:100%; background:linear-gradient(180deg,#0f0c0e,#0a0808);
+    border-right:1px solid var(--line); overflow-y:auto; padding:16px 16px 50px 16px; z-index:6; }
+  #sidebar::-webkit-scrollbar{ width:6px; } #sidebar::-webkit-scrollbar-thumb{ background:#2a1f1a; border-radius:3px; }
+
+  .brand{ display:flex; align-items:baseline; gap:8px; }
+  .brand .dot{ width:8px; height:8px; border-radius:50%; background:var(--orange); box-shadow:0 0 8px var(--orange); }
+  .brand h1{ font-size:15px; letter-spacing:0.04em; margin:0; font-weight:700; }
+  .brand h1 span{ color:var(--orange); }
+  .subtitle{ font-size:11px; color:var(--dim); margin:2px 0 14px 16px; line-height:1.5; }
+
+  .section{ margin-bottom:14px; border:1px solid var(--line); border-radius:10px; padding:12px 14px; background:rgba(255,255,255,0.015); }
+  .section-title{ font-size:10.5px; letter-spacing:0.12em; text-transform:uppercase; color:var(--dim);
+    display:flex; align-items:center; gap:8px; margin-bottom:10px; font-weight:700; }
+  .section-title::before{ content:''; width:14px; height:1px; background:currentColor; opacity:0.5; }
+
+  .row{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:9px; }
+  .row label{ font-size:11.3px; color:var(--dim); flex:0 0 auto; }
+  .row .val{ font-size:10.8px; color:var(--text); min-width:50px; text-align:right; }
+  input[type=range]{ -webkit-appearance:none; flex:1; height:3px; background:#2a2019; border-radius:2px; outline:none; margin:0 8px; }
+  input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; width:12px; height:12px; border-radius:50%;
+    background:var(--orange); cursor:pointer; border:2px solid #0b0a0e; box-shadow:0 0 6px var(--orange-dim); }
+  input[type=range]:disabled::-webkit-slider-thumb{ background:#4a4038; box-shadow:none; }
+  select{ background:#15100c; border:1px solid var(--line); color:var(--text); font-size:11.5px; padding:7px 8px; border-radius:6px; width:100%; }
+
+  button{ font-family:'Inter',sans-serif; font-weight:600; font-size:12px; letter-spacing:0.02em; border-radius:7px;
+    border:1px solid var(--line); padding:9px 10px; cursor:pointer; background:#161010; color:var(--text); transition:all .15s ease; }
+  button:hover{ border-color:var(--orange-dim); color:#fff; }
+  button.primary{ background:linear-gradient(135deg,#ff8a3d,#ff5470); color:#160b06; border:none; }
+  button.primary:hover{ filter:brightness(1.1); }
+  button:active{ transform:scale(0.97); }
+  .btnrow{ display:flex; gap:8px; margin-bottom:8px; } .btnrow button{ flex:1; }
+  .btn-grid{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-bottom:4px; }
+  .btn-grid button{ font-size:11px; padding:9px 4px; }
+  .btn-grid button.active{ background:linear-gradient(135deg,#ff8a3d,#ff5470); color:#160b06; border:none; font-weight:700; }
+
+  .hint{ font-size:10px; color:var(--dim); line-height:1.55; margin-top:6px; }
+
+  .bulb-block{ border-top:1px solid var(--line); padding-top:9px; margin-top:9px; }
+  .bulb-block:first-child{ border-top:none; padding-top:0; margin-top:0; }
+  .bulb-name{ font-size:10.5px; font-weight:700; color:var(--amber); margin-bottom:6px; display:flex; align-items:center; justify-content:space-between; }
+  .burnt-toggle{ display:flex; align-items:center; gap:6px; font-size:10px; color:var(--dim); cursor:pointer; user-select:none; }
+  .burnt-toggle input{ accent-color:var(--danger); }
+
+  .switch-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:9px; }
+  .switch-row label{ font-size:11.3px; color:var(--dim); }
+  .switch-row input[type=checkbox]{ accent-color:var(--orange); width:15px; height:15px; }
+
+  /* ---------------- main ---------------- */
+  #main{ position:relative; flex:1; height:100%; background:radial-gradient(ellipse at 50% 0%, #100c0d, #08060a 70%); }
+  #circuitCanvas{ position:absolute; inset:0; width:100%; height:100%; display:block; cursor:pointer; }
+
+  #topbar{ position:absolute; top:14px; left:14px; right:14px; display:flex; align-items:center; gap:10px; z-index:5; pointer-events:none; flex-wrap:wrap; }
+  #topbar .pill{ background:rgba(10,8,8,0.78); backdrop-filter:blur(6px); border:1px solid var(--line); border-radius:9px;
+    padding:8px 12px; font-family:'Space Mono',monospace; font-size:11.5px; display:flex; align-items:center; gap:8px; pointer-events:auto; }
+  #topbar .pill b{ color:#fff; font-weight:400; }
+  #topbar .pill.eq b{ color:var(--amber); }
+  #topbar .pill.cur b{ color:var(--ok); }
+  #topbar .pill.pow b{ color:var(--orange); }
+  #topbar .modeTag{ font-family:'Space Mono',monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase;
+    color:var(--dim); background:rgba(10,8,8,0.78); backdrop-filter:blur(6px); border:1px solid var(--line); border-radius:9px; padding:8px 12px; pointer-events:auto; }
+
+  #formulaPanel{ position:absolute; left:14px; bottom:14px; width:340px; max-height:220px; overflow-y:auto;
+    background:rgba(10,8,8,0.85); backdrop-filter:blur(6px); border:1px solid var(--line); border-radius:12px; padding:13px 15px; z-index:5; transition:opacity .2s ease, transform .2s ease; }
+  #formulaPanel::-webkit-scrollbar{ width:5px; } #formulaPanel::-webkit-scrollbar-thumb{ background:#2a1f1a; border-radius:3px; }
+  #formulaPanel .lab{ font-family:'Space Mono',monospace; font-size:10px; letter-spacing:0.1em; color:var(--dim); text-transform:uppercase; margin-bottom:8px; }
+  #formulaPanel .line{ font-family:'Space Mono',monospace; font-size:11.5px; color:var(--text); line-height:1.9; }
+  #formulaPanel .line .lbl{ color:var(--dim); }
+  #formulaPanel .line b{ color:var(--amber); font-weight:400; }
+  #formulaPanel.hidden{ opacity:0; pointer-events:none; transform:translateY(6px); }
+
+  #tipPanel{ position:absolute; right:14px; bottom:14px; width:230px; background:rgba(10,8,8,0.85); backdrop-filter:blur(6px);
+    border:1px solid var(--orange-dim); border-radius:12px; padding:12px 14px; z-index:5; font-size:11px; color:var(--dim); line-height:1.6; }
+  #tipPanel b{ color:var(--amber); }
+
+  ::selection{ background:var(--orange-dim); }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ SIDEBAR ============ -->
+  <div id="sidebar">
+    <div class="brand"><div class="dot"></div><h1>CIRC<span>UIT</span> LAB</h1></div>
+    <div class="subtitle">Build a series, parallel, or mixed circuit and see exactly how current, voltage, and brightness actually behave — including what happens when a bulb burns out.</div>
+
+    <div class="section">
+      <div class="section-title">Circuit type</div>
+      <div class="btn-grid" id="modeGrid">
+        <button data-mode="series" class="active">Series</button>
+        <button data-mode="parallel">Parallel</button>
+        <button data-mode="mixed">Mixed</button>
+      </div>
+      <div class="hint" id="modeHint">All bulbs share one loop — the same current flows through every one of them.</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Power source</div>
+      <div class="row"><label>Battery voltage</label><input type="range" id="voltage" min="1.5" max="24" step="0.5" value="9"><span class="val" id="voltageV">9.0 V</span></div>
+    </div>
+
+    <div class="section" id="countSection">
+      <div class="section-title">Bulbs</div>
+      <div class="row" id="bulbCountRow"><label>Number of bulbs</label>
+        <select id="bulbCount"><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option></select>
+      </div>
+      <div id="bulbControls"></div>
+      <div class="hint">Click any bulb in the diagram to burn it out too — that's exactly what the checkboxes above do.</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Display</div>
+      <div class="switch-row"><label>Animate current flow</label><input type="checkbox" id="animateFlow" checked></div>
+      <div class="row"><label>Flow speed</label><input type="range" id="flowSpeed" min="10" max="100" step="5" value="45"><span class="val" id="flowSpeedV">45</span></div>
+      <div class="switch-row"><label>Show live readings</label><input type="checkbox" id="showReadings" checked></div>
+      <div class="switch-row"><label>Show equivalent-R steps</label><input type="checkbox" id="showFormula" checked></div>
+    </div>
+  </div>
+
+  <!-- ============ MAIN ============ -->
+  <div id="main">
+    <canvas id="circuitCanvas"></canvas>
+
+    <div id="topbar">
+      <div class="modeTag" id="modeTag">SERIES</div>
+      <div class="pill eq mono">R<sub>eq</sub> <b id="pillReq">— Ω</b></div>
+      <div class="pill cur mono">I<sub>total</sub> <b id="pillItotal">— A</b></div>
+      <div class="pill pow mono">P<sub>total</sub> <b id="pillPtotal">— W</b></div>
+    </div>
+
+    <div id="formulaPanel">
+      <div class="lab">Equivalent resistance — worked out live</div>
+      <div id="formulaLines"></div>
+    </div>
+
+    <div id="tipPanel">
+      <b>Try this:</b> burn out one bulb in Series, then switch to Parallel and burn out one there instead. Watch what happens to the rest.
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================================
+   STATE
+   ========================================================================= */
+let mode = 'series';                 // 'series' | 'parallel' | 'mixed'
+let voltage = 9;
+let animateFlow = true;
+let flowSpeed = 45;
+let showReadings = true;
+let showFormula = true;
+
+function defaultBulbs(n){
+  const base = [120, 68, 220, 150];
+  const arr = [];
+  for(let i=0;i<n;i++) arr.push({ r: base[i % base.length], broken: false });
+  return arr;
+}
+let bulbs = defaultBulbs(3); // for mixed: [0]=R1 series, [1]=R2 parallel, [2]=R3 parallel
+
+const els = {
+  modeGrid: document.getElementById('modeGrid'),
+  modeHint: document.getElementById('modeHint'),
+  modeTag: document.getElementById('modeTag'),
+  voltage: document.getElementById('voltage'),
+  voltageV: document.getElementById('voltageV'),
+  countSection: document.getElementById('countSection'),
+  bulbCountRow: document.getElementById('bulbCountRow'),
+  bulbCount: document.getElementById('bulbCount'),
+  bulbControls: document.getElementById('bulbControls'),
+  animateFlow: document.getElementById('animateFlow'),
+  flowSpeed: document.getElementById('flowSpeed'),
+  flowSpeedV: document.getElementById('flowSpeedV'),
+  showReadings: document.getElementById('showReadings'),
+  showFormula: document.getElementById('showFormula'),
+  pillReq: document.getElementById('pillReq'),
+  pillItotal: document.getElementById('pillItotal'),
+  pillPtotal: document.getElementById('pillPtotal'),
+  formulaPanel: document.getElementById('formulaPanel'),
+  formulaLines: document.getElementById('formulaLines'),
+};
+
+const MODE_HINTS = {
+  series: 'All bulbs share one loop — the same current flows through every one of them. Burn one out and the whole loop goes dark.',
+  parallel: 'Each bulb gets its own branch straight across the battery — every branch sees the full voltage. Burn one out and the rest keep shining.',
+  mixed: 'R1 carries the full current on its own, then the current splits between R2 and R3 before recombining — a real mash-up of both rules.'
+};
+
+/* =========================================================================
+   SIDEBAR WIRING
+   ========================================================================= */
+function fmt(n, digits){ if(!isFinite(n)) return '∞'; return n.toFixed(digits); }
+function fmtOhm(n){ if(!isFinite(n)) return '∞ Ω'; return n>=1000 ? (n/1000).toFixed(2)+' kΩ' : n.toFixed(1)+' Ω'; }
+function fmtAmp(n){ if(!isFinite(n)) return '— A'; const ma = n*1000; return ma<1000 ? ma.toFixed(1)+' mA' : n.toFixed(2)+' A'; }
+function fmtWatt(n){ if(!isFinite(n)) return '— W'; return n<1 ? (n*1000).toFixed(0)+' mW' : n.toFixed(2)+' W'; }
+function fmtVolt(n){ if(!isFinite(n)) return '— V'; return n.toFixed(2)+' V'; }
+
+function setMode(m){
+  mode = m;
+  [...els.modeGrid.children].forEach(b=> b.classList.toggle('active', b.dataset.mode===m));
+  els.modeHint.textContent = MODE_HINTS[m];
+  els.modeTag.textContent = m.toUpperCase();
+  if(m==='mixed'){
+    els.bulbCountRow.style.display = 'none';
+    bulbs = [{r:100,broken:false},{r:150,broken:false},{r:220,broken:false}];
+  } else {
+    els.bulbCountRow.style.display = '';
+    bulbs = defaultBulbs(parseInt(els.bulbCount.value,10));
+  }
+  renderBulbControls();
+}
+
+function renderBulbControls(){
+  els.bulbControls.innerHTML = '';
+  const names = mode==='mixed' ? ['R1 · in series', 'R2 · parallel branch', 'R3 · parallel branch'] : bulbs.map((_,i)=>`Bulb ${i+1}`);
+  bulbs.forEach((b, i)=>{
+    const block = document.createElement('div');
+    block.className = 'bulb-block';
+    block.innerHTML = `
+      <div class="bulb-name"><span>${names[i]}</span>
+        <label class="burnt-toggle"><input type="checkbox" data-i="${i}" class="burntChk" ${b.broken?'checked':''}> burnt out</label>
+      </div>
+      <div class="row"><label>Resistance</label><input type="range" class="rSlider" data-i="${i}" min="10" max="400" step="2" value="${b.r}"><span class="val rVal">${b.r} Ω</span></div>
+    `;
+    els.bulbControls.appendChild(block);
+  });
+  els.bulbControls.querySelectorAll('.rSlider').forEach(sl=>{
+    sl.addEventListener('input', e=>{
+      const i = parseInt(e.target.dataset.i,10);
+      bulbs[i].r = parseFloat(e.target.value);
+      e.target.nextElementSibling.textContent = bulbs[i].r + ' Ω';
+    });
+  });
+  els.bulbControls.querySelectorAll('.burntChk').forEach(chk=>{
+    chk.addEventListener('change', e=>{
+      const i = parseInt(e.target.dataset.i,10);
+      bulbs[i].broken = e.target.checked;
+    });
+  });
+}
+
+els.modeGrid.addEventListener('click', e=>{
+  const btn = e.target.closest('button[data-mode]');
+  if(btn) setMode(btn.dataset.mode);
+});
+els.voltage.addEventListener('input', e=>{ voltage = parseFloat(e.target.value); els.voltageV.textContent = voltage.toFixed(1)+' V'; });
+els.bulbCount.addEventListener('change', e=>{ bulbs = defaultBulbs(parseInt(e.target.value,10)); renderBulbControls(); });
+els.animateFlow.addEventListener('change', e=>{ animateFlow = e.target.checked; });
+els.flowSpeed.addEventListener('input', e=>{ flowSpeed = parseFloat(e.target.value); els.flowSpeedV.textContent = flowSpeed; });
+els.showReadings.addEventListener('change', e=>{ showReadings = e.target.checked; });
+els.showFormula.addEventListener('change', e=>{ showFormula = e.target.checked; els.formulaPanel.classList.toggle('hidden', !showFormula); });
+
+renderBulbControls();
+
+/* =========================================================================
+   CIRCUIT PHYSICS
+   ========================================================================= */
+function computeCircuit(){
+  const V = voltage;
+  const n = bulbs.length;
+  const out = { Req: NaN, Itotal: 0, Ptotal: 0, per: bulbs.map(()=>({v:0,i:0,p:0})) };
+
+  if(mode==='series'){
+    const anyBroken = bulbs.some(b=>b.broken);
+    if(anyBroken){
+      out.Req = Infinity; out.Itotal = 0; out.Ptotal = 0;
+      const brokenCount = bulbs.filter(b=>b.broken).length;
+      bulbs.forEach((b,i)=>{ out.per[i] = { v: b.broken ? V/brokenCount : 0, i:0, p:0 }; });
+    } else {
+      const Req = bulbs.reduce((s,b)=>s+b.r,0);
+      const I = V/Req;
+      out.Req = Req; out.Itotal = I;
+      bulbs.forEach((b,i)=>{ const v=I*b.r, p=I*I*b.r; out.per[i]={v,i:I,p}; out.Ptotal+=p; });
+    }
+  }
+
+  if(mode==='parallel'){
+    let invReq = 0, Itotal=0, Ptotal=0;
+    bulbs.forEach((b,i)=>{
+      if(b.broken){ out.per[i] = {v:V, i:0, p:0}; }
+      else { const i_i = V/b.r, p_i = V*i_i; out.per[i]={v:V,i:i_i,p:p_i}; invReq += 1/b.r; Itotal += i_i; Ptotal += p_i; }
+    });
+    out.Req = invReq>0 ? 1/invReq : Infinity;
+    out.Itotal = Itotal; out.Ptotal = Ptotal;
+  }
+
+  if(mode==='mixed'){
+    const [R1,R2,R3] = bulbs;
+    // parallel pair equivalent
+    let Rp;
+    if(R2.broken && R3.broken) Rp = Infinity;
+    else if(R2.broken) Rp = R3.r;
+    else if(R3.broken) Rp = R2.r;
+    else Rp = (R2.r*R3.r)/(R2.r+R3.r);
+
+    if(R1.broken){
+      out.Req = Infinity; out.Itotal = 0; out.Ptotal = 0;
+      out.per[0] = {v:V, i:0, p:0};
+      out.per[1] = {v:0, i:0, p:0};
+      out.per[2] = {v:0, i:0, p:0};
+    } else if(!isFinite(Rp)){
+      out.Req = Infinity; out.Itotal = 0; out.Ptotal = 0;
+      out.per[0] = {v:0, i:0, p:0};
+      out.per[1] = {v:V, i:0, p:0};
+      out.per[2] = {v:V, i:0, p:0};
+    } else {
+      const Req = R1.r + Rp;
+      const I = V/Req;
+      const vR1 = I*R1.r, pR1 = I*I*R1.r;
+      const vPar = V - vR1;
+      out.Req = Req; out.Itotal = I;
+      out.per[0] = {v:vR1, i:I, p:pR1};
+      let Ptotal = pR1;
+      [R2,R3].forEach((b,idx)=>{
+        if(b.broken){ out.per[idx+1] = {v:vPar, i:0, p:0}; }
+        else { const i_i = vPar/b.r, p_i = vPar*i_i; out.per[idx+1] = {v:vPar, i:i_i, p:p_i}; Ptotal += p_i; }
+      });
+      out.Ptotal = Ptotal;
+    }
+  }
+
+  return out;
+}
+
+function updateFormulaPanel(result){
+  let html = '';
+  if(mode==='series'){
+    const terms = bulbs.map(b=>b.r+'Ω').join(' + ');
+    html += `<div class="line"><span class="lbl">R_eq =</span> ${terms} = <b>${fmtOhm(result.Req)}</b></div>`;
+    html += `<div class="line"><span class="lbl">I = V / R_eq =</span> ${voltage.toFixed(1)} / ${fmt(result.Req,1)} = <b>${fmtAmp(result.Itotal)}</b> <span class="lbl">(same everywhere)</span></div>`;
+  } else if(mode==='parallel'){
+    const terms = bulbs.map(b=>`1/${b.r}`).join(' + ');
+    html += `<div class="line"><span class="lbl">1/R_eq =</span> ${terms}</div>`;
+    html += `<div class="line"><span class="lbl">R_eq =</span> <b>${fmtOhm(result.Req)}</b></div>`;
+    html += `<div class="line"><span class="lbl">Each branch sees V =</span> <b>${voltage.toFixed(1)} V</b> <span class="lbl">(full battery voltage)</span></div>`;
+    html += `<div class="line"><span class="lbl">I_total = ΣI_branch =</span> <b>${fmtAmp(result.Itotal)}</b></div>`;
+  } else {
+    const [R1,R2,R3] = bulbs;
+    const RpVal = (!R2.broken && !R3.broken) ? (R2.r*R3.r)/(R2.r+R3.r) : (R2.broken&&R3.broken? Infinity : (R2.broken?R3.r:R2.r));
+    html += `<div class="line"><span class="lbl">R_p (R2∥R3) =</span> (${R2.r}×${R3.r})/(${R2.r}+${R3.r}) = <b>${fmtOhm(RpVal)}</b></div>`;
+    html += `<div class="line"><span class="lbl">R_eq = R1 + R_p =</span> ${R1.r} + ${fmt(RpVal,1)} = <b>${fmtOhm(result.Req)}</b></div>`;
+    html += `<div class="line"><span class="lbl">I_total = V / R_eq =</span> <b>${fmtAmp(result.Itotal)}</b> <span class="lbl">(through R1)</span></div>`;
+  }
+  els.formulaLines.innerHTML = html;
+}
+
+/* =========================================================================
+   RENDERING
+   ========================================================================= */
+const canvas = document.getElementById('circuitCanvas');
+const ctx = canvas.getContext('2d');
+let dpr = Math.min(window.devicePixelRatio||1, 2);
+
+function resizeCanvas(){
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = Math.round(rect.width*dpr);
+  canvas.height = Math.round(rect.height*dpr);
+  canvas.style.width = rect.width+'px';
+  canvas.style.height = rect.height+'px';
+}
+window.addEventListener('resize', resizeCanvas);
+
+function pathLength(pts){
+  let L=0; for(let i=1;i<pts.length;i++){ L += Math.hypot(pts[i].x-pts[i-1].x, pts[i].y-pts[i-1].y); } return L;
+}
+function pointAt(pts, t){ // t in [0, totalLength]
+  let remain = t;
+  for(let i=1;i<pts.length;i++){
+    const seg = Math.hypot(pts[i].x-pts[i-1].x, pts[i].y-pts[i-1].y);
+    if(remain <= seg || i===pts.length-1){
+      const f = seg>0 ? remain/seg : 0;
+      return { x: pts[i-1].x + (pts[i].x-pts[i-1].x)*Math.min(1,f), y: pts[i-1].y + (pts[i].y-pts[i-1].y)*Math.min(1,f) };
+    }
+    remain -= seg;
+  }
+  return pts[pts.length-1];
+}
+
+/* Build the visual layout for the current mode. Returns { segments, bulbPositions, battery } */
+function buildLayout(w,h){
+  const battX = 96, railGap=0;
+  const topY = mode==='parallel' ? h*0.24 : h*0.32;
+  const bottomY = mode==='parallel' ? h*0.80 : h*0.74;
+  const rightX = w-80;
+  const battTop = topY, battBottom = bottomY;
+
+  const battery = { x: battX, top: battTop, bottom: battBottom };
+  const segments = []; // {points:[...], current:number}
+  const bulbPos = []; // {x,y,orient:'h'|'v', index}
+
+  if(mode==='series'){
+    const n = bulbs.length;
+    const x1 = battX + 90, x2 = rightX - 20;
+    const spacing = (x2-x1)/(n-1 || 1);
+    const topPts = [{x:battX, y:topY}];
+    for(let i=0;i<n;i++){
+      const bx = n===1 ? (x1+x2)/2 : x1 + spacing*i;
+      bulbPos.push({x:bx, y:topY, orient:'h', index:i});
+      topPts.push({x:bx-22, y:topY});
+      topPts.push({x:bx+22, y:topY});
+    }
+    topPts.push({x:rightX, y:topY});
+    const rightPts = [{x:rightX,y:topY},{x:rightX,y:bottomY}];
+    const bottomPts = [{x:rightX,y:bottomY},{x:battX,y:bottomY}];
+    segments.push({points:topPts.concat(rightPts.slice(1)).concat(bottomPts.slice(1)), currentKey:'total'});
+  }
+
+  if(mode==='parallel'){
+    const n = bulbs.length;
+    const x1 = battX + 100, x2 = rightX - 20;
+    const spacing = n>1 ? (x2-x1)/(n-1) : 0;
+    const branchX = [];
+    for(let i=0;i<n;i++) branchX.push(n===1 ? (x1+x2)/2 : x1+spacing*i);
+    const lastX = branchX[branchX.length-1];
+
+    segments.push({points:[{x:battX,y:topY},{x:lastX,y:topY}], currentKey:'total'});
+    segments.push({points:[{x:lastX,y:bottomY},{x:battX,y:bottomY}], currentKey:'total'});
+    branchX.forEach((bx,i)=>{
+      const midY = (topY+bottomY)/2;
+      bulbPos.push({x:bx, y:midY, orient:'v', index:i});
+      segments.push({points:[{x:bx,y:topY},{x:bx,y:midY-22},{x:bx,y:midY+22},{x:bx,y:bottomY}], currentKey:'branch'+i});
+    });
+  }
+
+  if(mode==='mixed'){
+    const j1 = battX + 190;
+    const j2 = j1 + 170;
+    const upperY = topY - 34, lowerY = topY + 34;
+    const r1x = battX + 90;
+
+    segments.push({points:[{x:battX,y:topY},{x:r1x-22,y:topY},{x:r1x+22,y:topY},{x:j1,y:topY}], currentKey:'r1'});
+    bulbPos.push({x:r1x, y:topY, orient:'h', index:0});
+
+    segments.push({points:[{x:j1,y:topY},{x:j1,y:upperY},{x:(j1+j2)/2-22,y:upperY},{x:(j1+j2)/2+22,y:upperY},{x:j2,y:upperY},{x:j2,y:topY}], currentKey:'r2'});
+    bulbPos.push({x:(j1+j2)/2, y:upperY, orient:'h', index:1});
+
+    segments.push({points:[{x:j1,y:topY},{x:j1,y:lowerY},{x:(j1+j2)/2-22,y:lowerY},{x:(j1+j2)/2+22,y:lowerY},{x:j2,y:lowerY},{x:j2,y:topY}], currentKey:'r3'});
+    bulbPos.push({x:(j1+j2)/2, y:lowerY, orient:'h', index:2});
+
+    segments.push({points:[{x:j2,y:topY},{x:rightX,y:topY},{x:rightX,y:bottomY},{x:battX,y:bottomY}], currentKey:'r1'});
+  }
+
+  return { segments, bulbPos, battery, topY, bottomY };
+}
+
+function segmentCurrent(seg, result){
+  if(mode==='series') return result.Itotal;
+  if(mode==='parallel'){
+    if(seg.currentKey==='total') return result.Itotal;
+    const idx = parseInt(seg.currentKey.replace('branch',''),10);
+    return result.per[idx].i;
+  }
+  if(mode==='mixed'){
+    if(seg.currentKey==='r1') return result.Itotal;
+    if(seg.currentKey==='r2') return result.per[1].i;
+    if(seg.currentKey==='r3') return result.per[2].i;
+  }
+  return 0;
+}
+
+let tGlobal = 0, lastT = performance.now();
+let bulbHitboxes = [];
+
+function drawBattery(b, V){
+  const cx = b.x, top=b.top, bot=b.bottom, mid=(top+bot)/2;
+  ctx.strokeStyle = 'rgba(255,200,150,0.5)';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.moveTo(cx,top); ctx.lineTo(cx,mid-26); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx,mid+26); ctx.lineTo(cx,bot); ctx.stroke();
+  // long plate (+)
+  ctx.lineWidth=4; ctx.strokeStyle = '#f3e9df';
+  ctx.beginPath(); ctx.moveTo(cx-18,mid-16); ctx.lineTo(cx+18,mid-16); ctx.stroke();
+  // short thick plate (-)
+  ctx.lineWidth=8; ctx.strokeStyle = '#f3e9df';
+  ctx.beginPath(); ctx.moveTo(cx-11,mid+16); ctx.lineTo(cx+11,mid+16); ctx.stroke();
+
+  ctx.font = '700 12px Space Mono, monospace';
+  ctx.fillStyle = 'var(--orange)'.startsWith('var') ? '#ff8a3d' : '#ff8a3d';
+  ctx.textAlign='center';
+  ctx.fillText('+', cx+34, mid-12);
+  ctx.fillText('−', cx+34, mid+22);
+  ctx.font = '700 13px Space Mono, monospace';
+  ctx.fillStyle = '#ffc267';
+  ctx.fillText(V.toFixed(1)+'V', cx, mid+46);
+}
+
+function drawWirePath(pts, current, maxCurrent, phase, doAnimate){
+  const active = current > 1e-6;
+  ctx.lineWidth = 3;
+  if(active){
+    ctx.strokeStyle = '#57e39a';
+    ctx.shadowColor = 'rgba(87,227,154,0.5)';
+    ctx.shadowBlur = 6;
+    ctx.setLineDash([]);
+  } else {
+    ctx.strokeStyle = 'rgba(255,255,255,0.14)';
+    ctx.shadowBlur = 0;
+    ctx.setLineDash([5,5]);
+  }
+  ctx.beginPath();
+  pts.forEach((p,i)=> i===0 ? ctx.moveTo(p.x,p.y) : ctx.lineTo(p.x,p.y));
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.shadowBlur = 0;
+
+  if(active && doAnimate){
+    const L = pathLength(pts);
+    const norm = Math.max(0.18, Math.min(1, current/maxCurrent));
+    const spacing = 34;
+    const nDots = Math.max(1, Math.floor(L/spacing));
+    for(let k=0;k<nDots;k++){
+      const t = (phase*norm + k*(L/nDots)) % L;
+      const p = pointAt(pts, t);
+      ctx.beginPath();
+      ctx.fillStyle = '#bdffe0';
+      ctx.shadowColor = '#57e39a'; ctx.shadowBlur = 8;
+      ctx.arc(p.x,p.y,3,0,Math.PI*2);
+      ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+  }
+}
+
+function drawBulb(x,y,orient,b,reading,idx){
+  const R = 20;
+  const brightness = isFinite(reading.p) && b.r>0 ? Math.min(1, reading.p / (voltage*voltage/b.r || 1)) : 0;
+  ctx.save();
+  ctx.translate(x,y);
+
+  // stubs connecting into the wire gap
+  ctx.strokeStyle = b.broken ? 'rgba(255,84,112,0.6)' : 'rgba(255,255,255,0.5)';
+  ctx.lineWidth=3;
+  if(orient==='h'){
+    ctx.beginPath(); ctx.moveTo(-30,0); ctx.lineTo(-R,0); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(R,0); ctx.lineTo(30,0); ctx.stroke();
+  } else {
+    ctx.beginPath(); ctx.moveTo(0,-30); ctx.lineTo(0,-R); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,R); ctx.lineTo(0,30); ctx.stroke();
+  }
+
+  // glow
+  if(!b.broken && brightness>0.02){
+    const g = ctx.createRadialGradient(0,0,2,0,0,R*2.1);
+    g.addColorStop(0, `rgba(255,230,150,${0.55*brightness})`);
+    g.addColorStop(1, 'rgba(255,230,150,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(0,0,R*2.1,0,Math.PI*2); ctx.fill();
+  }
+
+  // bulb body
+  ctx.beginPath(); ctx.arc(0,0,R,0,Math.PI*2);
+  if(b.broken){
+    ctx.setLineDash([3,3]);
+    ctx.strokeStyle = '#ff5470';
+    ctx.lineWidth=2;
+    ctx.stroke();
+    ctx.setLineDash([]);
+  } else {
+    const base = [26,20,18];
+    const c1 = base.map((v,i)=> Math.round(v + (255-v)*brightness*[1,0.85,0.35][i]));
+    ctx.fillStyle = `rgb(${c1[0]},${c1[1]},${c1[2]})`;
+    ctx.fill();
+    ctx.strokeStyle = brightness>0.5 ? '#ffe6a0' : 'rgba(255,200,150,0.4)';
+    ctx.lineWidth = 1.6;
+    ctx.stroke();
+  }
+
+  // filament X
+  ctx.strokeStyle = b.broken ? '#ff5470' : (brightness>0.4 ? '#3a2a10' : 'rgba(255,255,255,0.25)');
+  ctx.lineWidth = 1.4;
+  const r2 = R*0.55;
+  ctx.beginPath(); ctx.moveTo(-r2,-r2); ctx.lineTo(r2,r2); ctx.moveTo(r2,-r2); ctx.lineTo(-r2,r2); ctx.stroke();
+
+  ctx.restore();
+
+  bulbHitboxes.push({x,y,r:R+6,index:idx});
+
+  if(showReadings){
+    ctx.font = '600 10px Space Mono, monospace';
+    ctx.textAlign='center';
+    ctx.fillStyle = '#ffc267';
+    const labelY = orient==='h' ? y-32 : y;
+    const labelX = orient==='h' ? x : x+52;
+    if(b.broken){
+      ctx.fillStyle = '#ff8a9a';
+      ctx.fillText('OPEN', labelX, labelY-2);
+    } else {
+      ctx.fillText(fmtVolt(reading.v)+' · '+fmtAmp(reading.i), labelX, labelY-2);
+    }
+  }
+}
+
+function draw(now){
+  const dt = Math.min(50, now-lastT); lastT = now;
+  if(animateFlow) tGlobal += dt/1000 * flowSpeed;
+
+  const w = canvas.width/dpr, h = canvas.height/dpr;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.save();
+  ctx.scale(dpr,dpr);
+
+  const result = computeCircuit();
+  const layout = buildLayout(w,h);
+  bulbHitboxes = [];
+
+  const maxCurrent = Math.max(0.001, result.Itotal, ...result.per.map(p=>p.i));
+
+  layout.segments.forEach(seg=>{
+    const cur = segmentCurrent(seg, result);
+    drawWirePath(seg.points, cur, maxCurrent, tGlobal, animateFlow);
+  });
+
+  drawBattery(layout.battery, voltage);
+
+  layout.bulbPos.forEach(bp=>{
+    drawBulb(bp.x, bp.y, bp.orient, bulbs[bp.index], result.per[bp.index], bp.index);
+  });
+
+  ctx.restore();
+
+  els.pillReq.textContent = fmtOhm(result.Req);
+  els.pillItotal.textContent = fmtAmp(result.Itotal);
+  els.pillPtotal.textContent = fmtWatt(result.Ptotal);
+  updateFormulaPanel(result);
+
+  requestAnimationFrame(draw);
+}
+
+canvas.addEventListener('click', e=>{
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX-rect.left, y = e.clientY-rect.top;
+  for(const hb of bulbHitboxes){
+    if(Math.hypot(x-hb.x, y-hb.y) <= hb.r){
+      bulbs[hb.index].broken = !bulbs[hb.index].broken;
+      const chk = els.bulbControls.querySelector(`.burntChk[data-i="${hb.index}"]`);
+      if(chk) chk.checked = bulbs[hb.index].broken;
+      break;
+    }
+  }
+});
+
+setMode('series');
+resizeCanvas();
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>

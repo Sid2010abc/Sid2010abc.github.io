@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Synapse Lab — Neural Network Visualizer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#08060a; --line:rgba(255,200,150,0.09);
+    --text:#f3e9df; --dim:#93897f;
+    --orange:#ff8a3d; --orange-dim:rgba(255,138,61,0.35); --orange-deep:#ff5e1a;
+    --amber:#ffc267; --ok:#57e39a; --danger:#ff5470; --violet:#8b6bff;
+  }
+  *{box-sizing:border-box;}
+  html,body{ margin:0; padding:0; width:100%; height:100%; background:var(--void); color:var(--text); font-family:'Inter',sans-serif; overflow:hidden; }
+  .mono{ font-family:'Space Mono',monospace; }
+  #app{ display:flex; width:100vw; height:100vh; }
+
+  #sidebar{ width:340px; min-width:340px; height:100%; background:linear-gradient(180deg,#0f0c0e,#0a0808);
+    border-right:1px solid var(--line); overflow-y:auto; padding:16px 16px 50px 16px; z-index:6; }
+  #sidebar::-webkit-scrollbar{ width:6px; } #sidebar::-webkit-scrollbar-thumb{ background:#2a1f1a; border-radius:3px; }
+
+  .brand{ display:flex; align-items:baseline; gap:8px; }
+  .brand .dot{ width:8px; height:8px; border-radius:50%; background:var(--orange); box-shadow:0 0 8px var(--orange); }
+  .brand h1{ font-size:15px; letter-spacing:0.04em; margin:0; font-weight:700; }
+  .brand h1 span{ color:var(--orange); }
+  .subtitle{ font-size:11px; color:var(--dim); margin:2px 0 14px 16px; line-height:1.5; }
+
+  .section{ margin-bottom:14px; border:1px solid var(--line); border-radius:10px; padding:12px 14px; background:rgba(255,255,255,0.015); }
+  .section-title{ font-size:10.5px; letter-spacing:0.12em; text-transform:uppercase; color:var(--dim);
+    display:flex; align-items:center; gap:8px; margin-bottom:10px; font-weight:700; }
+  .section-title::before{ content:''; width:14px; height:1px; background:currentColor; opacity:0.5; }
+
+  .row{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:9px; }
+  .row label{ font-size:11.3px; color:var(--dim); flex:0 0 auto; }
+  .row .val{ font-size:10.8px; color:var(--text); min-width:40px; text-align:right; }
+  input[type=range]{ -webkit-appearance:none; flex:1; height:3px; background:#2a2019; border-radius:2px; outline:none; margin:0 8px; }
+  input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; width:12px; height:12px; border-radius:50%;
+    background:var(--orange); cursor:pointer; border:2px solid #0b0a0e; box-shadow:0 0 6px var(--orange-dim); }
+  select{ background:#15100c; border:1px solid var(--line); color:var(--text); font-size:11.5px; padding:7px 8px; border-radius:6px; width:100%; }
+
+  button{ font-family:'Inter',sans-serif; font-weight:600; font-size:12px; letter-spacing:0.02em; border-radius:7px;
+    border:1px solid var(--line); padding:9px 10px; cursor:pointer; background:#161010; color:var(--text); transition:all .15s ease; }
+  button:hover{ border-color:var(--orange-dim); color:#fff; }
+  button.primary{ background:linear-gradient(135deg,#ff8a3d,#ff5470); color:#160b06; border:none; }
+  button.primary:hover{ filter:brightness(1.1); }
+  button:active{ transform:scale(0.97); }
+  button:disabled{ opacity:0.35; cursor:not-allowed; }
+  .btnrow{ display:flex; gap:8px; margin-bottom:8px; } .btnrow button{ flex:1; }
+  .btn-grid{ display:grid; grid-template-columns:1fr 1fr; gap:6px; } .btn-grid button{ font-size:10.6px; padding:8px 6px; }
+
+  .digit-row{ display:grid; grid-template-columns:repeat(5,1fr); gap:6px; margin-bottom:8px; }
+  .digit-btn{ aspect-ratio:1; display:flex; align-items:center; justify-content:center; border-radius:7px;
+    border:1px solid var(--line); background:#130f0d; color:var(--dim); font-family:'Space Mono',monospace; font-size:13px; cursor:pointer; }
+  .digit-btn.active{ background:linear-gradient(135deg,#ff8a3d,#ff5470); color:#160b06; border:none; font-weight:700; }
+
+  .hint{ font-size:10px; color:var(--dim); line-height:1.55; margin-top:6px; }
+
+  /* ---------------- main ---------------- */
+  #main{ position:relative; flex:1; height:100%; background:#08060a; }
+  #netCanvas{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+
+  #topbar{ position:absolute; top:14px; left:14px; right:14px; display:flex; align-items:center; gap:10px; z-index:5; pointer-events:none; }
+  #topbar > *{ pointer-events:auto; }
+  #topbar .pill{ background:rgba(10,8,8,0.78); backdrop-filter:blur(6px); border:1px solid var(--line); border-radius:9px;
+    padding:8px 12px; font-family:'Space Mono',monospace; font-size:11px; display:flex; align-items:center; gap:8px; }
+  #predictionBanner{ flex:1; text-align:center; font-family:'Inter',sans-serif; font-size:15px; font-weight:600; color:var(--text);
+    background:rgba(10,8,8,0.82); backdrop-filter:blur(6px); border:1px solid var(--orange-dim); border-radius:9px;
+    padding:9px 16px; transform:scale(1); transition:transform .18s ease, border-color .18s ease; }
+  #predictionBanner.pulse{ transform:scale(1.035); border-color:var(--orange); }
+  #predictionBanner b{ color:var(--amber); font-size:21px; margin:0 3px; }
+
+  #drawPanel{ position:absolute; top:66px; left:14px; width:308px; background:rgba(10,8,8,0.82); backdrop-filter:blur(6px);
+    border:1px solid var(--line); border-radius:12px; padding:14px; z-index:5; }
+  #drawPanel .lab{ font-family:'Space Mono',monospace; font-size:10px; letter-spacing:0.1em; color:var(--dim); text-transform:uppercase; margin-bottom:8px; }
+  .draw-row{ display:flex; gap:12px; align-items:flex-start; }
+  #padCanvas{ width:190px; height:190px; border-radius:8px; background:#000; cursor:crosshair; touch-action:none;
+    border:1px solid var(--line); }
+  #thumbWrap{ display:flex; flex-direction:column; align-items:center; gap:6px; }
+  #thumbCanvas{ width:64px; height:64px; background:#000; border:1px solid var(--line); border-radius:6px; image-rendering:pixelated; }
+  #thumbWrap span{ font-size:9px; color:var(--dim); text-align:center; line-height:1.3; }
+  .draw-actions{ display:flex; gap:6px; margin-top:10px; }
+  .draw-actions button{ flex:1; font-size:10.5px; padding:7px 6px; }
+
+  #hud{ position:absolute; top:66px; right:14px; width:236px; background:rgba(10,8,8,0.82); backdrop-filter:blur(6px);
+    border:1px solid var(--line); border-radius:12px; padding:14px 16px; z-index:5; }
+  #hud .lab{ font-family:'Space Mono',monospace; font-size:10px; letter-spacing:0.1em; color:var(--dim); text-transform:uppercase; margin-bottom:8px; }
+  #predBig{ font-size:52px; font-weight:700; text-align:center; line-height:1; color:var(--amber); text-shadow:0 0 18px var(--orange-dim); }
+  #predConf{ text-align:center; font-family:'Space Mono',monospace; font-size:11px; color:var(--dim); margin-top:2px; margin-bottom:10px; }
+  #hud .stat{ display:flex; justify-content:space-between; font-family:'Space Mono',monospace; font-size:11px; line-height:1.9; }
+  #hud .stat b{ color:#fff; font-weight:400; }
+
+  #lossPanel{ position:absolute; left:14px; right:318px; bottom:14px; height:108px; background:rgba(10,8,8,0.82);
+    backdrop-filter:blur(6px); border:1px solid var(--line); border-radius:10px; overflow:hidden; z-index:5; }
+  #lossPanel .lab{ position:absolute; top:8px; left:12px; font-family:'Space Mono',monospace; font-size:10px; letter-spacing:0.1em; color:var(--dim); text-transform:uppercase; z-index:2; }
+  #lossCanvas{ width:100%; height:100%; display:block; }
+
+  #logPanel{ position:absolute; right:14px; bottom:14px; width:290px; height:108px; background:rgba(10,8,8,0.82);
+    backdrop-filter:blur(6px); border:1px solid var(--line); border-radius:10px; padding:9px 11px; overflow-y:auto; z-index:5; }
+  #logPanel::-webkit-scrollbar{ width:5px;} #logPanel::-webkit-scrollbar-thumb{ background:#2a1f1a; border-radius:3px; }
+  #logPanel .lab{ font-family:'Space Mono',monospace; font-size:10px; letter-spacing:0.1em; color:var(--dim); text-transform:uppercase; margin-bottom:6px; }
+  .log-entry{ font-size:10.2px; color:var(--dim); padding:4px 0; border-top:1px solid var(--line); }
+  .log-entry:first-child{ border-top:none; }
+  .log-entry b{ color:var(--amber); }
+
+  #loading{ position:absolute; inset:0; background:var(--void); display:flex; align-items:center; justify-content:center;
+    flex-direction:column; gap:10px; z-index:50; transition:opacity .5s ease; }
+  #loading .ring{ width:36px; height:36px; border-radius:50%; border:2px solid #2a1f1a; border-top-color:var(--orange); animation:spin 1s linear infinite; }
+  #loading span{ font-family:'Space Mono',monospace; font-size:11px; color:var(--dim); letter-spacing:0.08em; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  ::selection{ background:var(--orange-dim); }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ SIDEBAR ============ -->
+  <div id="sidebar">
+    <div class="brand"><div class="dot"></div><h1>SYN<span>APSE</span> LAB</h1></div>
+    <div class="subtitle">Draw a digit, watch it flow through a real backprop network, and reshape the architecture live.</div>
+
+    <div class="section">
+      <div class="section-title">Label &amp; train this drawing</div>
+      <div class="digit-row" id="labelRow"></div>
+      <button class="primary" id="trainOneBtn" style="width:100%;" disabled>Train on this drawing</button>
+      <div class="hint">Pick the digit you actually drew, then train — the network takes a few gradient steps on just this example so you can watch its confidence jump.</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Built‑in dataset training</div>
+      <div class="row"><label>Samples per digit</label><input type="range" id="samplesPerDigit" min="4" max="16" step="1" value="8"><span class="val" id="samplesPerDigitV">8</span></div>
+      <div class="row"><label>Epochs</label><input type="range" id="epochs" min="1" max="30" step="1" value="10"><span class="val" id="epochsV">10</span></div>
+      <div class="row"><label>Playback speed</label><input type="range" id="speed" min="0" max="3" step="1" value="2"><span class="val" id="speedV">Fast</span></div>
+      <div class="btnrow">
+        <button class="primary" id="trainBatchBtn">▶ Train on dataset</button>
+        <button id="stopBtn">⏸ Stop</button>
+      </div>
+      <div class="hint">Generates a small synthetic set of stylized 0–9 shapes (not real handwriting) with random jitter, then runs real SGD + backprop while you watch.</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Architecture</div>
+      <div class="btn-grid" style="margin-bottom:10px;">
+        <button data-preset="tiny">Tiny · 1×8</button>
+        <button data-preset="classic">Classic · 16,16</button>
+        <button data-preset="deep">Deep · 24,16,12</button>
+        <button id="resetWeightsBtn">Reset weights</button>
+      </div>
+      <div class="row"><label>Input resolution</label>
+        <select id="inputRes"><option value="8">8×8</option><option value="10">10×10</option><option value="14" selected>14×14</option><option value="20">20×20</option></select>
+      </div>
+      <div class="row"><label>Hidden layers</label>
+        <select id="hiddenCount"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option></select>
+      </div>
+      <div id="layerSliders"></div>
+      <div class="row"><label>Activation</label>
+        <select id="activation"><option value="relu" selected>ReLU</option><option value="sigmoid">Sigmoid</option><option value="tanh">Tanh</option></select>
+      </div>
+      <div class="row"><label>Learning rate</label><input type="range" id="lr" min="0.01" max="1.5" step="0.01" value="0.4"><span class="val" id="lrV">0.40</span></div>
+      <div class="hint">Changing input resolution, layer count, or neuron counts rebuilds the network with fresh random weights. Activation and learning rate apply live.</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Visualization</div>
+      <div class="row"><label>Simple view (recommended)</label><input type="checkbox" id="simpleView" checked style="accent-color:#ff8a3d;"></div>
+      <div class="hint" style="margin-top:-4px;">Simple view just shows neurons lighting up, layer by layer, with plain labels — the clearest way to watch a prediction happen. Turn it off to see every individual weighted connection underneath.</div>
+      <div class="row" style="margin-top:10px;"><label>Show connections</label><input type="checkbox" id="showConn" checked style="accent-color:#ff8a3d;"></div>
+      <div class="row"><label>Connection strength floor</label><input type="range" id="connFloor" min="0" max="90" step="1" value="45"><span class="val" id="connFloorV">45%</span></div>
+      <div class="row"><label>Live predict while drawing</label><input type="checkbox" id="livePredict" checked style="accent-color:#ff8a3d;"></div>
+      <div class="hint">(Connection controls only apply with Simple view turned off.)</div>
+    </div>
+  </div>
+
+  <!-- ============ MAIN ============ -->
+  <div id="main">
+    <canvas id="netCanvas"></canvas>
+
+    <div id="topbar">
+      <div class="pill mono" style="color:var(--dim)">architecture <b id="archLabel" style="color:#fff; font-weight:400; margin-left:4px;"></b></div>
+      <div id="predictionBanner">Draw a digit — the network's live guess will show up right here</div>
+    </div>
+
+    <div id="drawPanel">
+      <div class="lab">Draw here</div>
+      <div class="draw-row">
+        <canvas id="padCanvas" width="260" height="260"></canvas>
+        <div id="thumbWrap">
+          <canvas id="thumbCanvas" width="14" height="14"></canvas>
+          <span>what the<br>network sees</span>
+        </div>
+      </div>
+      <div class="row" style="margin-top:10px;"><label>Brush size</label><input type="range" id="brush" min="6" max="26" step="1" value="16"><span class="val" id="brushV">16</span></div>
+      <div class="draw-actions">
+        <button id="clearBtn">Clear</button>
+        <button class="primary" id="predictBtn">Predict</button>
+      </div>
+    </div>
+
+    <div id="hud">
+      <div class="lab">Prediction</div>
+      <div id="predBig">—</div>
+      <div id="predConf">draw something</div>
+      <div class="stat"><span>Loss</span><b class="mono" id="statLoss">—</b></div>
+      <div class="stat"><span>Rolling accuracy</span><b class="mono" id="statAcc">—</b></div>
+      <div class="stat"><span>Samples trained</span><b class="mono" id="statSamples">0</b></div>
+      <div class="stat"><span>Epoch</span><b class="mono" id="statEpoch">—</b></div>
+    </div>
+
+    <div id="lossPanel"><div class="lab">Training loss</div><canvas id="lossCanvas"></canvas></div>
+
+    <div id="logPanel"><div class="lab">Training log</div><div id="logList" style="color:var(--dim); font-size:10.2px;">No training yet.</div></div>
+
+    <div id="loading"><div class="ring"></div><span>WIRING UP NEURONS…</span></div>
+  </div>
+</div>
+
+<script>
+/* =========================================================================
+   NETWORK CORE (plain-JS MLP, real forward/backward — no external libs)
+   ========================================================================= */
+let inputRes = 14;
+let hiddenSizes = [16,16,16]; // backing store; only the first `hiddenCount` are used
+let hiddenCount = 2;
+let activationName = 'relu';
+let learningRate = 0.4;
+
+let net = null; // { layerSizes, weights, biases, flashLayer }
+
+function randInit(fanIn){ return (Math.random()*2-1)*Math.sqrt(1/fanIn); }
+
+function buildNetwork(){
+  const layerSizes = [inputRes*inputRes, ...hiddenSizes.slice(0,hiddenCount), 10];
+  const weights=[], biases=[], flashLayer=[];
+  for(let l=0;l<layerSizes.length-1;l++){
+    const fanIn=layerSizes[l], fanOut=layerSizes[l+1];
+    const W=[]; for(let j=0;j<fanOut;j++){ const row=new Array(fanIn); for(let k=0;k<fanIn;k++) row[k]=randInit(fanIn); W.push(row); }
+    weights.push(W);
+    biases.push(new Array(fanOut).fill(0));
+    flashLayer.push(0);
+  }
+  net = {layerSizes, weights, biases, flashLayer};
+  els.archLabel.textContent = layerSizes.join(' → ');
+}
+
+function actFn(x){ switch(activationName){ case 'sigmoid': return 1/(1+Math.exp(-x)); case 'tanh': return Math.tanh(x); default: return Math.max(0,x); } }
+function actDeriv(z,a){ switch(activationName){ case 'sigmoid': return a*(1-a); case 'tanh': return 1-a*a; default: return z>0?1:0; } }
+
+function softmax(z){
+  const m = Math.max(...z);
+  const ex = z.map(v=>Math.exp(v-m));
+  const s = ex.reduce((a,b)=>a+b,0);
+  return ex.map(v=>v/s);
+}
+
+function forward(input){
+  const activations=[input], zs=[];
+  let a=input;
+  for(let l=0;l<net.weights.length;l++){
+    const W=net.weights[l], B=net.biases[l];
+    const z=new Array(W.length);
+    for(let j=0;j<W.length;j++){
+      let sum=B[j]; const row=W[j];
+      for(let k=0;k<row.length;k++) sum+=row[k]*a[k];
+      z[j]=sum;
+    }
+    zs.push(z);
+    const isOutput = l===net.weights.length-1;
+    const out = isOutput ? softmax(z) : z.map(actFn);
+    activations.push(out);
+    a=out;
+  }
+  return {activations, zs};
+}
+
+function trainStep(input, label){
+  const {activations, zs} = forward(input);
+  const L = net.weights.length;
+  const target = new Array(10).fill(0); target[label]=1;
+  const deltas = new Array(L);
+  deltas[L-1] = activations[L].map((a,i)=>a-target[i]);
+  for(let l=L-2; l>=0; l--){
+    const nextW = net.weights[l+1];
+    const size = net.layerSizes[l+1];
+    const d = new Array(size).fill(0);
+    for(let j=0;j<size;j++){
+      let sum=0;
+      for(let k=0;k<nextW.length;k++) sum += nextW[k][j]*deltas[l+1][k];
+      d[j] = sum*actDeriv(zs[l][j], activations[l+1][j]);
+    }
+    deltas[l]=d;
+  }
+  for(let l=0;l<L;l++){
+    const prevA = activations[l];
+    const W=net.weights[l], B=net.biases[l];
+    let gradMag=0;
+    for(let j=0;j<W.length;j++){
+      const dj = deltas[l][j];
+      const row=W[j];
+      for(let k=0;k<row.length;k++){
+        const grad = dj*prevA[k];
+        row[k] -= learningRate*grad;
+        gradMag += Math.abs(grad);
+      }
+      B[j] -= learningRate*dj;
+    }
+    net.flashLayer[l] = Math.min(1, net.flashLayer[l] + Math.min(1, gradMag/(W.length*Math.max(1,prevA.length))*40));
+  }
+  const pred = activations[L];
+  const predicted = pred.indexOf(Math.max(...pred));
+  const loss = -Math.log(Math.max(pred[label],1e-7));
+  return {loss, predicted, correct: predicted===label, activations};
+}
+
+function predictOnly(input){
+  const {activations} = forward(input);
+  const pred = activations[activations.length-1];
+  const predicted = pred.indexOf(Math.max(...pred));
+  return {activations, pred, predicted, confidence: pred[predicted]};
+}
+
+/* =========================================================================
+   SYNTHETIC DIGIT TEMPLATES (stylized strokes, not real handwriting)
+   ========================================================================= */
+const DIGIT_PATHS = {
+  0:[[[0.5,0.12],[0.68,0.18],[0.78,0.35],[0.78,0.65],[0.68,0.82],[0.5,0.88],[0.32,0.82],[0.22,0.65],[0.22,0.35],[0.32,0.18],[0.5,0.12]]],
+  1:[[[0.35,0.28],[0.52,0.14],[0.52,0.86]],[[0.36,0.86],[0.68,0.86]]],
+  2:[[[0.25,0.3],[0.3,0.16],[0.6,0.14],[0.76,0.28],[0.72,0.46],[0.45,0.62],[0.22,0.78],[0.22,0.86],[0.78,0.86]]],
+  3:[[[0.22,0.18],[0.5,0.13],[0.72,0.22],[0.72,0.4],[0.5,0.48],[0.72,0.56],[0.75,0.75],[0.55,0.87],[0.25,0.8]]],
+  4:[[[0.62,0.13],[0.2,0.62],[0.8,0.62]],[[0.62,0.15],[0.62,0.86]]],
+  5:[[[0.72,0.15],[0.28,0.15],[0.24,0.46],[0.5,0.42],[0.72,0.52],[0.74,0.74],[0.52,0.87],[0.28,0.8]]],
+  6:[[[0.68,0.18],[0.42,0.15],[0.25,0.35],[0.22,0.65],[0.35,0.84],[0.58,0.86],[0.75,0.72],[0.72,0.52],[0.5,0.44],[0.32,0.52]]],
+  7:[[[0.2,0.16],[0.8,0.16],[0.42,0.86]]],
+  8:[[[0.5,0.14],[0.32,0.24],[0.32,0.4],[0.5,0.5],[0.68,0.4],[0.68,0.24],[0.5,0.14]],[[0.5,0.5],[0.3,0.6],[0.3,0.76],[0.5,0.87],[0.7,0.76],[0.7,0.6],[0.5,0.5]]],
+  9:[[[0.68,0.5],[0.5,0.56],[0.32,0.48],[0.3,0.28],[0.46,0.14],[0.64,0.16],[0.75,0.32],[0.72,0.62],[0.58,0.82],[0.38,0.86]]]
+};
+
+const genCanvas = document.createElement('canvas'); genCanvas.width=260; genCanvas.height=260;
+const genCtx = genCanvas.getContext('2d');
+function renderDigitTemplate(digit, jitter){
+  const S=260;
+  genCtx.fillStyle='#000'; genCtx.fillRect(0,0,S,S);
+  genCtx.save();
+  genCtx.translate(S/2,S/2);
+  genCtx.rotate(jitter.rot);
+  genCtx.scale(jitter.scale,jitter.scale);
+  genCtx.translate(-S/2+jitter.tx, -S/2+jitter.ty);
+  genCtx.strokeStyle='#fff'; genCtx.lineWidth=S*0.085; genCtx.lineCap='round'; genCtx.lineJoin='round';
+  for(const stroke of DIGIT_PATHS[digit]){
+    genCtx.beginPath();
+    stroke.forEach(([x,y],i)=>{ const px=x*S, py=y*S; if(i===0) genCtx.moveTo(px,py); else genCtx.lineTo(px,py); });
+    genCtx.stroke();
+  }
+  genCtx.restore();
+  if(jitter.noise){
+    const id = genCtx.getImageData(0,0,S,S);
+    for(let i=0;i<300;i++){
+      const px=(Math.random()*S)|0, py=(Math.random()*S)|0;
+      const o=(py*S+px)*4;
+      const v=Math.random()*90;
+      id.data[o]=Math.min(255,id.data[o]+v); id.data[o+1]=id.data[o]; id.data[o+2]=id.data[o];
+    }
+    genCtx.putImageData(id,0,0);
+  }
+  return genCanvas;
+}
+function randomJitter(){
+  return { rot:(Math.random()-0.5)*0.5, scale:0.82+Math.random()*0.3, tx:(Math.random()-0.5)*40, ty:(Math.random()-0.5)*40, noise:true };
+}
+
+function downsampleCanvasToVector(srcCanvas, res){
+  thumbCanvas.width=res; thumbCanvas.height=res;
+  thumbCtx.imageSmoothingEnabled = true;
+  thumbCtx.clearRect(0,0,res,res);
+  thumbCtx.drawImage(srcCanvas,0,0,srcCanvas.width,srcCanvas.height,0,0,res,res);
+  const data = thumbCtx.getImageData(0,0,res,res).data;
+  const vec = new Array(res*res);
+  for(let i=0;i<res*res;i++) vec[i] = data[i*4]/255;
+  return vec;
+}
+
+function buildDataset(perDigit){
+  const set=[];
+  for(let d=0; d<=9; d++){
+    for(let s=0; s<perDigit; s++){
+      const canvasImg = renderDigitTemplate(d, randomJitter());
+      // snapshot into its own small canvas copy since genCanvas gets reused
+      const snap = document.createElement('canvas'); snap.width=260; snap.height=260;
+      snap.getContext('2d').drawImage(canvasImg,0,0);
+      set.push({digit:d, canvas:snap});
+    }
+  }
+  for(let i=set.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [set[i],set[j]]=[set[j],set[i]]; }
+  return set;
+}
+
+/* =========================================================================
+   UI ELEMENT REFS
+   ========================================================================= */
+const els = {
+  labelRow:document.getElementById('labelRow'), trainOneBtn:document.getElementById('trainOneBtn'),
+  samplesPerDigit:document.getElementById('samplesPerDigit'), samplesPerDigitV:document.getElementById('samplesPerDigitV'),
+  epochs:document.getElementById('epochs'), epochsV:document.getElementById('epochsV'),
+  speed:document.getElementById('speed'), speedV:document.getElementById('speedV'),
+  trainBatchBtn:document.getElementById('trainBatchBtn'), stopBtn:document.getElementById('stopBtn'),
+  inputRes:document.getElementById('inputRes'), hiddenCount:document.getElementById('hiddenCount'),
+  layerSliders:document.getElementById('layerSliders'), activation:document.getElementById('activation'),
+  lr:document.getElementById('lr'), lrV:document.getElementById('lrV'),
+  resetWeightsBtn:document.getElementById('resetWeightsBtn'),
+  showConn:document.getElementById('showConn'), connFloor:document.getElementById('connFloor'), connFloorV:document.getElementById('connFloorV'),
+  simpleView:document.getElementById('simpleView'), predictionBanner:document.getElementById('predictionBanner'),
+  livePredict:document.getElementById('livePredict'),
+  archLabel:document.getElementById('archLabel'),
+  padCanvas:document.getElementById('padCanvas'), thumbCanvas:document.getElementById('thumbCanvas'),
+  brush:document.getElementById('brush'), brushV:document.getElementById('brushV'),
+  clearBtn:document.getElementById('clearBtn'), predictBtn:document.getElementById('predictBtn'),
+  predBig:document.getElementById('predBig'), predConf:document.getElementById('predConf'),
+  statLoss:document.getElementById('statLoss'), statAcc:document.getElementById('statAcc'),
+  statSamples:document.getElementById('statSamples'), statEpoch:document.getElementById('statEpoch'),
+  logList:document.getElementById('logList')
+};
+
+const thumbCtx = els.thumbCanvas.getContext('2d');
+const thumbCanvas = els.thumbCanvas;
+
+/* digit label row */
+let selectedLabel = null;
+for(let d=0; d<=9; d++){
+  const b=document.createElement('div'); b.className='digit-btn'; b.textContent=d; b.dataset.d=d;
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('.digit-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); selectedLabel=d; els.trainOneBtn.disabled=false;
+  });
+  els.labelRow.appendChild(b);
+}
+
+/* =========================================================================
+   DRAW PAD
+   ========================================================================= */
+const padCanvas = els.padCanvas, padCtx = padCanvas.getContext('2d');
+padCtx.fillStyle='#000'; padCtx.fillRect(0,0,padCanvas.width,padCanvas.height);
+let drawing=false, lastX=0, lastY=0;
+
+function stampAt(x,y,r){
+  const g = padCtx.createRadialGradient(x,y,0,x,y,r);
+  g.addColorStop(0,'rgba(255,255,255,0.95)');
+  g.addColorStop(0.7,'rgba(255,255,255,0.55)');
+  g.addColorStop(1,'rgba(255,255,255,0)');
+  padCtx.fillStyle=g;
+  padCtx.beginPath(); padCtx.arc(x,y,r,0,Math.PI*2); padCtx.fill();
+}
+function padPos(e){
+  const rect=padCanvas.getBoundingClientRect();
+  const cx = (e.touches? e.touches[0].clientX : e.clientX) - rect.left;
+  const cy = (e.touches? e.touches[0].clientY : e.clientY) - rect.top;
+  return { x: cx/rect.width*padCanvas.width, y: cy/rect.height*padCanvas.height };
+}
+function beginStroke(e){
+  drawing=true; const p=padPos(e); lastX=p.x; lastY=p.y;
+  const r=parseFloat(els.brush.value);
+  stampAt(p.x,p.y,r);
+  scheduleLivePredict();
+}
+function moveStroke(e){
+  if(!drawing) return;
+  const p=padPos(e); const r=parseFloat(els.brush.value);
+  const dist=Math.hypot(p.x-lastX,p.y-lastY);
+  const steps=Math.max(1,Math.floor(dist/(r*0.4)));
+  for(let i=1;i<=steps;i++){ const t=i/steps; stampAt(lastX+(p.x-lastX)*t, lastY+(p.y-lastY)*t, r); }
+  lastX=p.x; lastY=p.y;
+  scheduleLivePredict();
+}
+function endStroke(){ drawing=false; updateThumb(); }
+
+padCanvas.addEventListener('mousedown', e=>{ beginStroke(e); });
+window.addEventListener('mousemove', e=>{ if(drawing) moveStroke(e); });
+window.addEventListener('mouseup', endStroke);
+padCanvas.addEventListener('touchstart', e=>{ e.preventDefault(); beginStroke(e); }, {passive:false});
+padCanvas.addEventListener('touchmove', e=>{ e.preventDefault(); moveStroke(e); }, {passive:false});
+padCanvas.addEventListener('touchend', e=>{ e.preventDefault(); endStroke(); });
+
+els.brush.addEventListener('input', ()=> els.brushV.textContent = els.brush.value);
+els.clearBtn.addEventListener('click', ()=>{
+  padCtx.fillStyle='#000'; padCtx.fillRect(0,0,padCanvas.width,padCanvas.height);
+  updateThumb();
+  els.predBig.textContent='—'; els.predConf.textContent='draw something';
+  lastPrediction=null; render();
+});
+
+let predictDebounce=null;
+function scheduleLivePredict(){
+  if(!els.livePredict.checked) return;
+  if(predictDebounce) clearTimeout(predictDebounce);
+  predictDebounce = setTimeout(()=>{ updateThumb(); doPredict(); }, 90);
+}
+
+function updateThumb(){
+  const vec = downsampleCanvasToVector(padCanvas, inputRes);
+  lastInputVector = vec;
+}
+
+let lastInputVector = new Array(inputRes*inputRes).fill(0);
+let lastPrediction = null;
+let pulseStart = -1e9;
+
+let bannerFlashTimeout = null;
+function flashBanner(html){
+  els.predictionBanner.innerHTML = html;
+  els.predictionBanner.classList.add('pulse');
+  if(bannerFlashTimeout) clearTimeout(bannerFlashTimeout);
+  bannerFlashTimeout = setTimeout(()=> els.predictionBanner.classList.remove('pulse'), 220);
+}
+
+function doPredict(){
+  if(!lastInputVector || lastInputVector.length!==inputRes*inputRes) updateThumb();
+  const res = predictOnly(lastInputVector);
+  lastPrediction = res;
+  pulseStart = performance.now();
+  els.predBig.textContent = res.predicted;
+  els.predConf.textContent = (res.confidence*100).toFixed(1)+'% confident';
+  flashBanner(`The network's guess: <b>${res.predicted}</b> — ${(res.confidence*100).toFixed(0)}% confident`);
+  return res;
+}
+els.predictBtn.addEventListener('click', ()=>{ updateThumb(); doPredict(); });
+
+els.trainOneBtn.addEventListener('click', ()=>{
+  if(selectedLabel===null) return;
+  updateThumb();
+  const vec = lastInputVector.slice();
+  let before=null, after=null;
+  for(let i=0;i<12;i++){
+    const r = trainStep(vec, selectedLabel);
+    if(i===0) before=r.activations[r.activations.length-1][selectedLabel];
+    after=r.activations[r.activations.length-1][selectedLabel];
+  }
+  doPredict();
+  logEvent(`Trained on your drawing as <b>${selectedLabel}</b> — confidence ${(before*100).toFixed(0)}% → ${(after*100).toFixed(0)}%`);
+});
+
+/* =========================================================================
+   ARCHITECTURE CONTROLS
+   ========================================================================= */
+function rebuildLayerSliders(){
+  els.layerSliders.innerHTML='';
+  for(let i=0;i<hiddenCount;i++){
+    const row=document.createElement('div'); row.className='row';
+    row.innerHTML = `<label>Hidden layer ${i+1} neurons</label><input type="range" min="4" max="28" step="1" value="${hiddenSizes[i]}" data-i="${i}"><span class="val">${hiddenSizes[i]}</span>`;
+    els.layerSliders.appendChild(row);
+    const input = row.querySelector('input');
+    const val = row.querySelector('.val');
+    input.addEventListener('input', ()=>{ val.textContent=input.value; });
+    input.addEventListener('change', ()=>{ hiddenSizes[i]=parseInt(input.value); rebuildNetwork(); });
+  }
+}
+
+function rebuildNetwork(){
+  buildNetwork();
+  resetTrainingStats();
+  logEvent(`Architecture rebuilt: <b>${net.layerSizes.join(' → ')}</b> — weights reset.`);
+  doPredict();
+}
+
+els.inputRes.addEventListener('change', ()=>{ inputRes=parseInt(els.inputRes.value); updateThumb(); rebuildNetwork(); });
+els.hiddenCount.addEventListener('change', ()=>{ hiddenCount=parseInt(els.hiddenCount.value); rebuildLayerSliders(); rebuildNetwork(); });
+els.activation.addEventListener('change', ()=>{ activationName=els.activation.value; doPredict(); });
+els.lr.addEventListener('input', ()=>{ learningRate=parseFloat(els.lr.value); els.lrV.textContent=learningRate.toFixed(2); });
+els.resetWeightsBtn.addEventListener('click', rebuildNetwork);
+
+document.querySelectorAll('[data-preset]').forEach(btn=>btn.addEventListener('click', ()=>{
+  const p = btn.dataset.preset;
+  if(p==='tiny'){ hiddenCount=1; hiddenSizes=[8,8,8]; els.inputRes.value='10'; }
+  else if(p==='classic'){ hiddenCount=2; hiddenSizes=[16,16,16]; els.inputRes.value='14'; }
+  else if(p==='deep'){ hiddenCount=3; hiddenSizes=[24,16,12]; els.inputRes.value='14'; }
+  inputRes=parseInt(els.inputRes.value);
+  els.hiddenCount.value=String(hiddenCount);
+  rebuildLayerSliders();
+  rebuildNetwork();
+}));
+
+els.connFloor.addEventListener('input', ()=> els.connFloorV.textContent = els.connFloor.value+'%');
+function applySimpleViewUI(){
+  const detail = !els.simpleView.checked;
+  els.showConn.disabled = !detail;
+  els.connFloor.disabled = !detail;
+}
+els.simpleView.addEventListener('change', applySimpleViewUI);
+applySimpleViewUI();
+
+/* =========================================================================
+   BATCH TRAINING
+   ========================================================================= */
+const SPEED_LEVELS = [ {name:'Slow', perSec:6}, {name:'Normal', perSec:20}, {name:'Fast', perSec:70}, {name:'Instant', perSec:Infinity} ];
+els.speed.addEventListener('input', ()=> els.speedV.textContent = SPEED_LEVELS[parseInt(els.speed.value)].name);
+
+let samplesTrained=0, lossHistory=[], correctWindow=[];
+let trainQueue=[], trainPlaying=false, currentEpochLabel='—';
+
+function resetTrainingStats(){
+  samplesTrained=0; lossHistory=[]; correctWindow=[];
+  els.statLoss.textContent='—'; els.statAcc.textContent='—'; els.statSamples.textContent='0'; els.statEpoch.textContent='—';
+  lossCtx.clearRect(0,0,lossCanvas.width,lossCanvas.height);
+}
+
+els.samplesPerDigit.addEventListener('input', ()=> els.samplesPerDigitV.textContent = els.samplesPerDigit.value);
+els.epochs.addEventListener('input', ()=> els.epochsV.textContent = els.epochs.value);
+
+els.trainBatchBtn.addEventListener('click', ()=>{
+  const perDigit = parseInt(els.samplesPerDigit.value);
+  const epochs = parseInt(els.epochs.value);
+  const dataset = buildDataset(perDigit);
+  trainQueue = [];
+  for(let e=0;e<epochs;e++){
+    const shuffled = dataset.slice();
+    for(let i=shuffled.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]]; }
+    for(const s of shuffled) trainQueue.push({digit:s.digit, canvas:s.canvas, epoch:e+1});
+  }
+  trainPlaying = true;
+  logEvent(`Started batch training — <b>${dataset.length}</b> samples × <b>${epochs}</b> epochs.`);
+});
+els.stopBtn.addEventListener('click', ()=>{ trainPlaying=false; trainQueue=[]; });
+
+function processTrainSample(sample){
+  const vec = downsampleCanvasToVector(sample.canvas, inputRes);
+  padCtx.clearRect(0,0,padCanvas.width,padCanvas.height);
+  padCtx.drawImage(sample.canvas,0,0,padCanvas.width,padCanvas.height);
+  const r = trainStep(vec, sample.digit);
+  samplesTrained++;
+  lossHistory.push(r.loss); if(lossHistory.length>400) lossHistory.shift();
+  correctWindow.push(r.correct?1:0); if(correctWindow.length>60) correctWindow.shift();
+  currentEpochLabel = String(sample.epoch);
+  lastPrediction = { activations: r.activations, predicted: r.predicted, confidence: r.activations[r.activations.length-1][r.predicted] };
+  pulseStart = performance.now();
+  els.predBig.textContent = r.predicted;
+  els.predConf.textContent = `${(lastPrediction.confidence*100).toFixed(1)}% — true label ${sample.digit}`;
+  els.statLoss.textContent = r.loss.toFixed(3);
+  const acc = correctWindow.reduce((a,b)=>a+b,0)/correctWindow.length;
+  els.statAcc.textContent = (acc*100).toFixed(0)+'%';
+  els.statSamples.textContent = samplesTrained;
+  els.statEpoch.textContent = currentEpochLabel;
+  drawLossChart();
+  if(samplesTrained%17===0){
+    logEvent(`Epoch <b>${currentEpochLabel}</b> — sample digit <b>${sample.digit}</b>, loss ${r.loss.toFixed(2)}, rolling acc ${(acc*100).toFixed(0)}%`);
+  }
+}
+
+/* =========================================================================
+   LOSS CHART
+   ========================================================================= */
+const lossCanvas = document.getElementById('lossCanvas');
+const lossCtx = lossCanvas.getContext('2d');
+function resizeLossCanvas(){
+  const wrap = document.getElementById('lossPanel');
+  lossCanvas.width = Math.max(2, wrap.clientWidth*window.devicePixelRatio);
+  lossCanvas.height = Math.max(2, wrap.clientHeight*window.devicePixelRatio);
+}
+function drawLossChart(){
+  const w=lossCanvas.width, h=lossCanvas.height;
+  lossCtx.clearRect(0,0,w,h);
+  if(lossHistory.length<2) return;
+  const maxLoss = Math.max(0.3, ...lossHistory);
+  lossCtx.strokeStyle='rgba(255,138,61,0.85)';
+  lossCtx.lineWidth=Math.max(1.2, w*0.0022);
+  lossCtx.beginPath();
+  const n=lossHistory.length;
+  for(let i=0;i<n;i++){
+    const x = (i/(n-1))*w;
+    const y = h - (lossHistory[i]/maxLoss)*h*0.86 - h*0.06;
+    if(i===0) lossCtx.moveTo(x,y); else lossCtx.lineTo(x,y);
+  }
+  lossCtx.stroke();
+  lossCtx.fillStyle='rgba(255,138,61,0.08)';
+  lossCtx.lineTo(w,h); lossCtx.lineTo(0,h); lossCtx.closePath(); lossCtx.fill();
+}
+
+/* =========================================================================
+   LOG
+   ========================================================================= */
+function logEvent(html){
+  if(els.logList.textContent==='No training yet.') els.logList.innerHTML='';
+  const div=document.createElement('div'); div.className='log-entry'; div.innerHTML=html;
+  els.logList.prepend(div);
+  while(els.logList.children.length>10) els.logList.removeChild(els.logList.lastChild);
+}
+
+/* =========================================================================
+   NETWORK DIAGRAM RENDERING
+   ========================================================================= */
+const netCanvas = document.getElementById('netCanvas');
+const netCtx = netCanvas.getContext('2d');
+let ndpr = Math.min(window.devicePixelRatio||1,2);
+function resizeNetCanvas(){
+  const rect = netCanvas.parentElement.getBoundingClientRect();
+  netCanvas.width = Math.round(rect.width*ndpr);
+  netCanvas.height = Math.round(rect.height*ndpr);
+  netCanvas.style.width = rect.width+'px'; netCanvas.style.height = rect.height+'px';
+}
+
+function layoutNetwork(w,h){
+  const layers = net.layerSizes;
+  const nLayers = layers.length;
+  const marginX = w*0.1, marginY = h*0.08;
+  const usableW = w - marginX*2;
+  const positions = []; // per layer: {type:'grid'|'col', nodes:[{x,y,idx}], cell?, cx }
+  for(let l=0;l<nLayers;l++){
+    const cx = marginX + (nLayers===1?0.5:l/(nLayers-1))*usableW;
+    if(l===0){
+      const n = layers[0];
+      const side = Math.round(Math.sqrt(n));
+      const boxSize = Math.min(h*0.58, w*0.16);
+      const cell = boxSize/side;
+      const nodes=[];
+      const startX = cx-boxSize/2, startY = h/2-boxSize/2+marginY*0.4;
+      for(let r=0;r<side;r++) for(let c=0;c<side;c++){
+        const ii=r*side+c; if(ii>=n) continue;
+        nodes.push({x:startX+c*cell+cell/2, y:startY+r*cell+cell/2, idx:ii});
+      }
+      positions.push({type:'grid', nodes, cell, side, cx});
+    } else {
+      const n = layers[l];
+      const usableH = h*0.68;
+      const startY = h/2 - usableH/2 + marginY*0.4;
+      const nodes=[];
+      for(let i=0;i<n;i++) nodes.push({x:cx, y: n===1? h/2 : startY+(i/(n-1))*usableH, idx:i});
+      positions.push({type:'col', nodes, cx});
+    }
+  }
+  return positions;
+}
+
+function layerCaption(l, nLayers){
+  if(l===0) return 'Your drawing';
+  if(l===nLayers-1) return 'Output — which digit?';
+  return nLayers-2===1 ? 'Hidden layer' : `Hidden layer ${l}`;
+}
+
+function activationColor(v, isInput){
+  const t = Math.max(0,Math.min(1, isInput? v : v));
+  const stops=[[26,18,20],[255,94,26],[255,233,176]];
+  const seg = t<0.5? 0:1; const lt = t<0.5? t*2 : (t-0.5)*2;
+  const a=stops[seg], b=stops[seg+1];
+  const r=a[0]+(b[0]-a[0])*lt, g=a[1]+(b[1]-a[1])*lt, bl=a[2]+(b[2]-a[2])*lt;
+  return `rgb(${r|0},${g|0},${bl|0})`;
+}
+
+function drawNetwork(time){
+  const w = netCanvas.width, h = netCanvas.height;
+  netCtx.clearRect(0,0,w,h);
+  netCtx.save(); netCtx.scale(ndpr,ndpr);
+  const cw = w/ndpr, ch = h/ndpr;
+
+  const positions = layoutNetwork(cw,ch);
+  const acts = lastPrediction ? lastPrediction.activations : null;
+  const simple = els.simpleView.checked;
+  const floor = simple ? 1 : parseFloat(els.connFloor.value)/100;
+
+  // plain-language captions above each layer
+  netCtx.fillStyle = 'rgba(243,233,223,0.55)';
+  netCtx.font = `600 ${Math.max(11,ch*0.021)}px Inter, sans-serif`;
+  netCtx.textAlign = 'center'; netCtx.textBaseline = 'alphabetic';
+  for(let l=0;l<positions.length;l++){
+    netCtx.fillText(layerCaption(l, positions.length), positions[l].cx, ch*0.075);
+  }
+
+  // pulse timing per layer
+  const pulses = positions.map((_,l)=>{
+    if(pulseStart<-1e8) return 0;
+    const localT = (time-pulseStart) - l*90;
+    if(localT<0 || localT>260) return 0;
+    return 1 - Math.abs(localT-130)/130;
+  });
+
+  // connections (hidden entirely in Simple view)
+  if(els.showConn.checked && !simple){
+    for(let l=0;l<positions.length-1;l++){
+      const A = positions[l], B = positions[l+1];
+      const W = net.weights[l];
+      const flash = net.flashLayer[l]||0;
+      let maxAbs=0.0001;
+      for(const row of W) for(const wv of row) maxAbs=Math.max(maxAbs, Math.abs(wv));
+      for(let j=0;j<B.nodes.length;j++){
+        const row=W[j];
+        for(let k=0;k<A.nodes.length;k++){
+          const wv = row[k];
+          const strength = Math.abs(wv)/maxAbs;
+          if(strength<floor) continue;
+          const pos = wv>=0;
+          const op = Math.min(0.9, strength*0.55 + flash*0.4);
+          netCtx.strokeStyle = pos? `rgba(255,138,61,${op})` : `rgba(139,107,255,${op})`;
+          netCtx.lineWidth = 0.5+strength*1.8+flash*1.2;
+          netCtx.beginPath();
+          netCtx.moveTo(A.nodes[k].x, A.nodes[k].y);
+          netCtx.lineTo(B.nodes[j].x, B.nodes[j].y);
+          netCtx.stroke();
+        }
+      }
+    }
+  }
+
+  // neurons
+  for(let l=0;l<positions.length;l++){
+    const layer = positions[l];
+    const layerActs = acts? acts[l] : null;
+    let maxA = 1;
+    if(layerActs && l>0) maxA = Math.max(0.01, ...layerActs.map(Math.abs));
+    for(const node of layer.nodes){
+      let v = layerActs ? layerActs[node.idx] : 0;
+      const norm = l===0 ? v : Math.min(1, Math.abs(v)/maxA);
+      const col = activationColor(norm, l===0);
+      const pulseBoost = pulses[l]*8;
+      if(layer.type==='grid'){
+        netCtx.fillStyle = col;
+        netCtx.fillRect(node.x-layer.cell/2*0.92, node.y-layer.cell/2*0.92, layer.cell*0.92, layer.cell*0.92);
+      } else {
+        const isOutput = l===positions.length-1;
+        const sizeBoost = simple ? 1.35 : 1;
+        const r = (isOutput? Math.max(9,ch*0.018) : Math.max(6,ch*0.013))*sizeBoost;
+        netCtx.save();
+        netCtx.shadowColor = col; netCtx.shadowBlur = 4+norm*10+pulseBoost;
+        netCtx.fillStyle = col;
+        netCtx.beginPath(); netCtx.arc(node.x,node.y,r,0,Math.PI*2); netCtx.fill();
+        netCtx.restore();
+        if(isOutput){
+          netCtx.fillStyle = (lastPrediction && lastPrediction.predicted===node.idx) ? '#ffe9b0' : 'rgba(255,255,255,0.65)';
+          netCtx.font = `700 ${Math.max(10,r*1.1)}px Space Mono, monospace`;
+          netCtx.textAlign='left'; netCtx.textBaseline='middle';
+          netCtx.fillText(String(node.idx), node.x+r+8, node.y);
+          const barW = 70, barH = 5;
+          const p = layerActs? layerActs[node.idx] : 0;
+          netCtx.fillStyle='rgba(255,255,255,0.08)';
+          netCtx.fillRect(node.x+r+26, node.y+9, barW, barH);
+          netCtx.fillStyle = (lastPrediction && lastPrediction.predicted===node.idx) ? '#ffe9b0' : 'rgba(255,138,61,0.7)';
+          netCtx.fillRect(node.x+r+26, node.y+9, barW*Math.max(0,Math.min(1,p)), barH);
+        }
+      }
+    }
+  }
+  netCtx.restore();
+}
+
+/* =========================================================================
+   MAIN LOOP
+   ========================================================================= */
+let lastT = performance.now();
+let trainAccumulator = 0;
+
+function loop(t){
+  requestAnimationFrame(loop);
+  const dt = Math.min((t-lastT)/1000,0.05); lastT=t;
+
+  if(trainPlaying){
+    const speed = SPEED_LEVELS[parseInt(els.speed.value)];
+    if(!trainQueue.length){ trainPlaying=false; logEvent(`Batch training complete — ${samplesTrained} total samples seen.`); }
+    else if(speed.perSec===Infinity){
+      while(trainQueue.length) processTrainSample(trainQueue.shift());
+      trainPlaying=false;
+      logEvent(`Batch training complete — ${samplesTrained} total samples seen.`);
+    } else {
+      trainAccumulator += speed.perSec*dt;
+      let n = Math.floor(trainAccumulator);
+      while(n>0 && trainQueue.length){ processTrainSample(trainQueue.shift()); n--; trainAccumulator--; }
+      if(!trainQueue.length){ trainPlaying=false; logEvent(`Batch training complete — ${samplesTrained} total samples seen.`); }
+    }
+  }
+
+  for(let l=0;l<net.flashLayer.length;l++) net.flashLayer[l]*=0.9;
+
+  drawNetwork(t);
+}
+
+window.addEventListener('resize', ()=>{ resizeNetCanvas(); resizeLossCanvas(); });
+
+/* =========================================================================
+   INIT
+   ========================================================================= */
+function init(){
+  rebuildLayerSliders();
+  buildNetwork();
+  resetTrainingStats();
+  resizeNetCanvas();
+  resizeLossCanvas();
+  updateThumb();
+  requestAnimationFrame(loop);
+  setTimeout(()=>{
+    const l=document.getElementById('loading');
+    l.style.opacity='0';
+    setTimeout(()=>l.style.display='none', 550);
+  }, 350);
+}
+init();
+</script>
+</body>
+</html>
