@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulations — Projects — Sidhant Maloo</title>
+  <meta name="description" content="Simulation and modeling projects by Sidhant Maloo.">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/pages.css">
+</head>
+
+<body>
+  <canvas id="circuit-bg" aria-hidden="true"></canvas>
+
+  <div class="page-shell">
+
+    <header class="site-header">
+      <div class="wrap">
+        <a href="../index.html" class="brand">
+          <span class="chip">SM</span>
+          <span>Sidhant Maloo<small>Aspiring Engineer</small></span>
+        </a>
+        <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+        <nav class="primary-nav">
+          <a href="../index.html">Home</a>
+          <div class="has-sub">
+            <a href="../about.html">About</a>
+            <div class="sub-menu">
+              <a href="../about.html">About</a>
+              <a href="../academics.html">Academics</a>
+              <a href="../beyond-the-build.html">Beyond the Build</a>
+            </div>
+          </div>
+          <div class="has-sub open">
+            <a href="index.html">Projects</a>
+            <div class="sub-menu">
+              <a href="robotics.html">Robotics</a>
+              <a href="simulations.html" class="active">Simulations</a>
+              <a href="research.html">Research</a>
+              <a href="notebook.html">Notebook</a>
+            </div>
+          </div>
+          <a href="../resume.html">Resume</a>
+          <a href="../contact.html">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="tight" style="padding-top:56px;">
+        <div class="wrap">
+          <span class="eyebrow">Projects / Simulations</span>
+          <h1>Models &amp; virtual testing</h1>
+          <p class="lede">Where I prototype control logic and test edge cases before anything touches real hardware. Any
+            code discussed here can be accessed from my github repositories. (Github/sid2010abc)</p>
+        </div>
+      </section>
+
+      <section class="tight">
+        <div class="wrap">
+          <div class="grid grid-3">
+
+            <article class="project-card">
+              <a href="https://github.com/Sid2010abc/Classical_ML_Stock_Analysis_Comparision">
+                <!-- ADD IMAGE: chart/plot of model output goes here, e.g. <img src="../assets/stock-model-plot.png" alt="SVR vs RF model output chart"> -->
+
+                <div class="thumb"><img src="sim_imgs/rfVsvr.png"></div>
+                <div class="body">
+                  <div class="tag-row">
+                    <span class="tag">ML</span>
+                    <span class="tag copper">Python</span>
+                  </div>
+                  <h3>Python AI Stock Analysis</h3>
+                  <p>A machine learning model that scores a stock's potential from multiple
+                    criteria. In parallel, writing up a research paper on SVR vs. RF model
+                    effectiveness on volatile, noisy datasets — see
+                    <a href="research.html"><u>Research</u></a>.
+                  </p>
+                  <div class="status"><span class="status-dot live"></span>Completed</div>
+                </div>
+              </a>
+            </article>
+
+            <a href="Simulations/CircuitLab.html" class="project-card">
+              <!-- ADD IMAGE: capture a screenshot or short screen-recording (converted to GIF) of the circuit sim running, showing the schematic and/or waveform output -->
+              <div class="thumb"><img src="sim_imgs/CircuitLab.png"></div>
+              <div class="body">
+                <div class="tag-row">
+                  <span class="tag">Simulation</span>
+                </div>
+                <h3>Circuit Lab</h3>
+                <p>Build series, parallel, or mixed circuits and watch real current/voltage physics play out — bulb
+                  brightness driven by actual power dissipation, burnt-out bulbs handled correctly (kills a series
+                  string, barely touches a parallel one), and a live equivalent-resistance breakdown.</p>
+                <div class="status"><span class="status-dot live"></span>Completed</div>
+              </div>
+            </a>
+
+            <a href="Simulations/EventhorizonLab.html" class="project-card">
+              <!-- ADD IMAGE: capture a rendered frame or short clip of the visualization, e.g. warped spacetime grid or an orbit/light-bending trace -->
+              <div class="thumb"><img src="sim_imgs/EventHorizon.png"></div>
+              <div class="body">
+                <div class="tag-row">
+                  <span class="tag">Simulation</span>
+                </div>
+                <h3>Event Horizon Lab</h3>
+                <p>Real-time N-body black hole sandbox: Newtonian gravity, gravitational-wave orbital decay,
+                  numerical-relativity-fitted merger remnants, and a raymarched renderer showing actual light bending
+                  around the holes.</p>
+                <div class="status"><span class="status-dot live"></span>Completed</div>
+              </div>
+            </a>
+
+            <a href="Simulations/IKLab.html" class="project-card">
+              <!-- ADD IMAGE: screenshot or GIF of the arm/limb moving through poses to reach a target -->
+              <div class="thumb"><img src="sim_imgs/IKLab.png"></div>
+              <div class="body">
+                <div class="tag-row">
+                  <span class="tag">Simulation</span>
+                </div>
+                <h3>IK Lab</h3>
+                <p>Drag a target and watch four real IK solvers (FABRIK, CCD, Jacobian Transpose, Jacobian DLS) chase it
+                  simultaneously as ghost overlays, with a live tracking-error chart comparing convergence — the same
+                  math and tradeoffs a robot arm controller has to deal with.</p>
+                <div class="status"><span class="status-dot live"></span>Completed</div>
+              </div>
+            </a>
+
+            <a href="Simulations/PathfinderLab.html" class="project-card">
+              <!-- ADD IMAGE: screenshot of the grid/graph with the found path highlighted -->
+              <div class="thumb"><img src="sim_imgs/Pathfinder.png"></div>
+              <div class="body">
+                <div class="tag-row">
+                  <span class="tag">Simulation</span>
+                </div>
+                <h3>Pathfinder Lab</h3>
+                <p>Draw your own map, drop a start and goal anywhere, and watch six classic search algorithms (BFS,
+                  Dijkstra, A*, etc.) race through it in real time.</p>
+                <div class="status"><span class="status-dot live"></span>Completed</div>
+              </div>
+            </a>
+
+            <a href="Simulations/QubitLab.html" class="project-card">
+              <!-- ADD IMAGE: screenshot of the state visualization, e.g. a Bloch sphere or probability chart -->
+              <div class="thumb"><img src="sim_imgs/Bloch.png"></div>
+              <div class="body">
+                <div class="tag-row">
+                  <span class="tag">Simulation</span>
+                </div>
+                <h3>Qubit Lab</h3>
+                <p>A real complex-amplitude quantum state engine for 1–3 qubits: Bloch sphere with draggable rotations,
+                  H/X/Z/S gates plus CNOT/Toffoli, and each qubit's Bloch vector visibly shrinks toward the center when
+                  entangled — computed from the actual reduced density matrix, not faked.</p>
+                <div class="status"><span class="status-dot live"></span>Completed</div>
+              </div>
+            </a>
+
+            <a href="Simulations/SynapseLab.html" class="project-card">
+              <!-- ADD IMAGE: screenshot or GIF of the network diagram / activation pattern -->
+              <div class="thumb"><img src="sim_imgs/Synapse.png"></div>
+              <div class="body">
+                <div class="tag-row">
+                  <span class="tag">Simulation</span>
+                </div>
+                <h3>Synapse Lab</h3>
+                <p>Draw a digit by hand and watch it flow through a real backprop-trained network, with the architecture
+                  reshapeable live.</p>
+                <div class="status"><span class="status-dot live"></span>Completed</div>
+              </div>
+            </a>
+            <article class="project-card">
+              <!-- ADD IMAGE: screenshot of the Qiskit demonstration or Python visualization -->
+              <div class="thumb"><img src="sim_imgs/QiskitDemo.png"></div>
+              <div class="body">
+                <div class="tag-row">
+                  <span class="tag">Quantum Computing</span>
+                  <span class="tag copper">Python & Qiskit</span>
+                </div>
+                <h3>Interactive Qiskit Demonstration</h3>
+                <p>Developed a Python script using Qiskit to demonstrate the fundamentals of
+                  quantum computing for the Leggee Elementary Coding Club. The project combined
+                  programming, computation, and physics while helping me explore how unfamiliar
+                  computational systems can be understood by making their underlying concepts
+                  interactive and accessible.</p>
+                <div class="status"><span class="status-dot live"></span>Completed</div>
+              </div>
+            </article>
+
+            <article class="project-card">
+              <!-- ADD IMAGE: screenshot of the boot dashboard -->
+              <div class="thumb"><img src="sim_imgs/BootPage.png"></div>
+              <div class="body">
+                <div class="tag-row">
+                  <span class="tag">System Design</span>
+                  <span class="tag copper">Python</span>
+                </div>
+                <h3>Custom Computer Boot Dashboard</h3>
+                <p>Built a custom loading dashboard for my computer that displays live system
+                  statistics, weather data, a random quote of the day, and dynamically selected
+                  ASCII art. Designed as both a functional interface and an experiment in making
+                  the underlying systems of a computer more visible and interactive.</p>
+                <div class="status"><span class="status-dot live"></span>Completed</div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <span>© 2026 Sidhant Maloo — designed &amp; built from scratch.</span>
+        <div class="footer-links">
+          <a href="../resume.html">Resume</a>
+          <a href="../contact.html">Contact</a>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+  <script src="../js/circuit-bg.js"></script>
+  <script src="../js/main.js"></script>
+</body>
+
+</html>

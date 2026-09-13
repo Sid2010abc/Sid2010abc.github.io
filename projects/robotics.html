@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Robotics — Projects — Sidhant Maloo</title>
+  <meta name="description" content="Robotics builds by Sidhant Maloo.">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/pages.css">
+</head>
+
+<body>
+  <canvas id="circuit-bg" aria-hidden="true"></canvas>
+
+  <div class="page-shell">
+
+    <header class="site-header">
+      <div class="wrap">
+        <a href="../index.html" class="brand">
+          <span class="chip">SM</span>
+          <span>Sidhant Maloo<small>Aspiring Engineer</small></span>
+        </a>
+        <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+        <nav class="primary-nav">
+          <a href="../index.html">Home</a>
+          <div class="has-sub">
+            <a href="../about.html">About</a>
+            <div class="sub-menu">
+              <a href="../about.html">About</a>
+              <a href="../academics.html">Academics</a>
+              <a href="../beyond-the-build.html">Beyond the Build</a>
+            </div>
+          </div>
+          <div class="has-sub open">
+            <a href="index.html">Projects</a>
+            <div class="sub-menu">
+              <a href="robotics.html" class="active">Robotics</a>
+              <a href="simulations.html">Simulations</a>
+              <a href="research.html">Research</a>
+              <a href="notebook.html">Notebook</a>
+            </div>
+          </div>
+          <a href="../resume.html">Resume</a>
+          <a href="../contact.html">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="tight" style="padding-top:56px;">
+        <div class="wrap">
+          <span class="eyebrow">Projects / Robotics</span>
+          <h1>Hardware &amp; control systems</h1>
+          <p class="lede">These are projects that took coding and building to complete. Although not all projects could
+            be reflected, the most recent and very oldest are all here. Green is completed, Orange is a
+            work-in-progress.</p>
+        </div>
+      </section>
+
+      <section class="tight">
+        <div class="wrap">
+          <div class="grid grid-3">
+            <article class="project-card">
+              <div class="thumb"><img src="robo_imgs/bob.png"></div>
+              <div class="body">
+                <div class="tag-row">
+                  <span class="tag">Manipulation</span>
+                  <span class="tag copper">Python</span>
+                </div>
+                <h3>Humanoid Robot</h3>
+                <p>An upper torso with AI-controlled arms (3 DOF each) and a head fitted
+                  with a camera, microphone, and speaker, aimed at handling natural,
+                  spoken human requests. Designed to respond as a friend and colleague as I pursue future ventures, he
+                  is currently addressed by his working title, Bob (Basic Operational Biomorph). He is almost entirely
+                  software at this point but will soon have a physical body to control. See the build log for updates
+                  starting October 2026 upon the release of this website.</p>
+                <div class="status"><span class="status-dot build"></span>In progress - Started May 2026</div>
+              </div>
+            </article>
+            <article class="project-card">
+              <!-- ADD IMAGE: KiCad PCB render or assembled board -->
+              <div class="thumb"><img src="robo_imgs/pcbDes.png"></div>
+              <div class="body">
+                <div class="tag-row">
+                  <span class="tag">PCB Design</span>
+                  <span class="tag copper">KiCad</span>
+                </div>
+                <h3>Custom PCB Design</h3>
+                <p>Designed a custom printed circuit board in KiCad, translating a circuit from
+                  individual components and connections into a manufacturable hardware system.
+                  The project expanded my interest in understanding how complex systems emerge
+                  from carefully designed interactions between simple components.</p>
+                <div class="status"><span class="status-dot build"></span>In progress - Started Late May 2026</div>
+              </div>
+            </article>
+
+            <article class="project-card">
+              <!-- ADD IMAGE: photo or demo GIF of the VEX V5 robot goes here, e.g. <img src="../assets/vex-robot.jpg" alt="VEX V5 competition robot"> -->
+              <div class="thumb"><img src="robo_imgs/vex.png"></div>
+              <div class="body">
+                <div class="tag-row">
+                  <span class="tag">Autonomous</span>
+                  <span class="tag copper">VEX V5</span>
+                </div>
+                <h3>VEX V5 Competition Robot</h3>
+                <p>Programmed autonomous and driver-controlled behavior using GPS, vision,
+                  bumper, and color sensors for the state robotics team, plus mechanical
+                  design and iterative prototyping. Helped earn the Think Award for
+                  documented engineering design and analysis. However, we now face problems with finding a head coach
+                  and funding for the 2026 to 2027 school year. Despite dozens of emails and meeting with the school
+                  board, we do not expect to be allowed to continue. We stay optimistic but also accept that we were
+                  never a top priority at our school.</p>
+                <div class="status"><span class="status-dot live"></span>State Team - 2025 to 2026</div>
+              </div>
+            </article>
+
+            <article class="project-card">
+              <!-- ADD IMAGE: Cyberdeck setup or demonstration -->
+              <div class="thumb"><img src="robo_imgs/cDeck.png"></div>
+              <div class="body">
+                <div class="tag-row">
+                  <span class="tag">Computer Hardware</span>
+                  <span class="tag copper">Raspberry Pi</span>
+                </div>
+                <h3>Raspberry Pi Cyberdeck</h3>
+                <p>Built a portable Raspberry Pi cyberdeck by integrating computing hardware,
+                  power, input, and display systems into a single functional device. Used it
+                  during demonstrations for students at Leggee Elementary, turning a personal
+                  hardware project into an opportunity to share how computers can be built and
+                  understood from the inside out. Used it to explain everything from CLIs to Qubits because of its
+                  immense attention grabbing potential.</p>
+                <div class="status"><span class="status-dot live"></span>Community Demonstration - 2025</div>
+              </div>
+            </article>
+
+            <article class="project-card">
+              <!-- ADD IMAGE: Fume extractor at soldering station -->
+              <div class="thumb"><img src="robo_imgs/fume extractor.png"></div>
+              <div class="body">
+                <div class="tag-row">
+                  <span class="tag">Fabrication</span>
+                  <span class="tag copper">Workshop Design</span>
+                </div>
+                <h3>DIY Soldering Fume Extractor</h3>
+                <p>Designed and built a factory-inspired fume extractor for my soldering
+                  station, approaching a workshop problem as a system of airflow, filtration,
+                  structure, and usability. The project reinforced how engineering principles
+                  can turn an ordinary workspace problem into something worth designing from
+                  scratch.</p>
+                <div class="status"><span class="status-dot live"></span>Practice Project - 2026</div>
+              </div>
+            </article>
+
+            <article class="project-card">
+              <!-- ADD IMAGE: Touch sensor light circuit -->
+              <div class="thumb"><img src="robo_imgs/sloderLight.png"></div>
+              <div class="body">
+                <div class="tag-row">
+                  <span class="tag">Electronics</span>
+                  <span class="tag copper">TTP223</span>
+                </div>
+                <h3>Touch-Controlled Soldering Station Light</h3>
+                <p>Built a touch-controlled light using TTP223 capacitive touch sensors for my
+                  soldering station. The project doubled as hands-on soldering practice while
+                  introducing me to the relationship between sensors, signals, and physical
+                  outputs in an electronic system.</p>
+                <div class="status"><span class="status-dot live"></span>Practice Project - 2026</div>
+              </div>
+            </article>
+
+            <article class="project-card">
+              <!-- ADD IMAGE: Multisim circuit simulations -->
+              <div class="thumb"><img src="robo_imgs/multisim.png"></div>
+              <div class="body">
+                <div class="tag-row">
+                  <span class="tag">Circuit Analysis</span>
+                  <span class="tag copper">Multisim</span>
+                </div>
+                <h3>Circuit Simulation and Analysis</h3>
+                <p>Explored series, parallel, and combination circuits through Multisim,
+                  connecting circuit theory with simulation and measurable behavior. These
+                  experiments helped establish the habit that now drives many of my projects:
+                  model a system, test its behavior, and revise my understanding based on the
+                  results.</p>
+                <div class="status"><span class="status-dot live"></span>Foundation Project - 2026</div>
+              </div>
+            </article>
+
+            <article class="project-card">
+              <!-- ADD IMAGE: Sky Viper drone repair -->
+              <div class="thumb"><img src="robo_imgs/drone.png"></div>
+              <div class="body">
+                <div class="tag-row">
+                  <span class="tag">Repair</span>
+                  <span class="tag copper">Reverse Engineering</span>
+                </div>
+                <h3>Sky Viper Drone Repair</h3>
+                <p>Diagnosed and repaired my brother's old Sky Viper drone, tracing problems
+                  through an unfamiliar system rather than starting with instructions or a
+                  blueprint. The repair strengthened my interest in learning how complex
+                  technology works by taking it apart, understanding its components, and
+                  bringing the system back to life.</p>
+                <div class="status"><span class="status-dot live"></span>Restoration Project - Throughout 2020 Pandemic
+                </div>
+              </div>
+            </article>
+
+            <article class="project-card">
+              <!-- ADD IMAGE: Childhood engineering projects -->
+              <div class="thumb"><img src="robo_imgs/boat.png"></div>
+              <div class="body">
+                <div class="tag-row">
+                  <span class="tag">Early Engineering</span>
+                  <span class="tag copper">Experimentation</span>
+                </div>
+                <h3>The First Things I Built</h3>
+                <p>Before I knew what engineering was, I built a cardboard boat, cardboard car,
+                  and miniature wind turbine simply to see whether they would work. Those early
+                  experiments were imperfect, but they established the same curiosity behind my
+                  projects today: understand an idea by turning it into something real, testing
+                  it, and figuring out why it succeeds or fails.</p>
+                <div class="status"><span class="status-dot live"></span>Where It Started - Before 2020</div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <span>© 2026 Sidhant Maloo — designed &amp; built from scratch.</span>
+        <div class="footer-links">
+          <a href="../resume.html">Resume</a>
+          <a href="../contact.html">Contact</a>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+  <script src="../js/circuit-bg.js"></script>
+  <script src="../js/main.js"></script>
+</body>
+
+</html>
